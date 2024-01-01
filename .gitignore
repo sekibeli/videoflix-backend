@@ -1,6 +1,6 @@
 /env
 db.postgresql
-/media/videos
+videoflix/media/videos
 # Created by https://www.gitignore.io
 
 ### OSX ###
