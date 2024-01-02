@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     'debug_toolbar',
+    'django_rq',
 ]
 
 MIDDLEWARE = [
@@ -82,17 +83,40 @@ INTERNAL_IPS = [
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
+CACHE_TTL = 60 * 15
+
 CACHES = {    
           "default": { 
               "BACKEND": "django_redis.cache.RedisCache",
               "LOCATION": "redis://127.0.0.1:6379/1",
               "OPTIONS": { 
+                  "PASSWORD":'foobared',
                   "CLIENT_CLASS": "django_redis.client.DefaultClient"
                   },
               "KEY_PREFIX": "videoflix"
               }
           }
 
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        # 'PASSWORD':'foobared',
+        'PORT': 6379,
+        'DB': 0,
+        'DEFAULT_TIMEOUT': 360,
+    },
+}
+#     'high': {
+#         'HOST': 'localhost',
+#         'PORT': 6379,
+#         'DB': 0,
+#     },
+#     'low': {
+#         'HOST': 'localhost',
+#         'PORT': 6379,
+#         'DB': 0,
+#     }
+# }
 
 WSGI_APPLICATION = "videoflix.wsgi.application"
 
