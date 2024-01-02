@@ -28,7 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/staticfiles')
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     'debug_toolbar',
     'django_rq',
+    'import_export',
 ]
 
 MIDDLEWARE = [
