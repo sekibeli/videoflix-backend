@@ -28,6 +28,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+IMPORT_EXPORT_USE_TRANSACTIONS = True
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/staticfiles')
 # Application definition
 
