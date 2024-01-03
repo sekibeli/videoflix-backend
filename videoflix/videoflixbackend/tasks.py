@@ -1,10 +1,29 @@
 import subprocess
+import os
 
 
-def convert_480p(source):
-    new_file_name = source + '480p.mp4'
-    # cmd = 'ffmpeg -i "{}" -s hd480 -c:v libx264 -crf 23 -c:a aac -strict -2 "{}"'.format(source, new_file_name)
+def convert_480p(source, output):
+    print('hey convert_480p wird ausgeführt')
+
     cmd = [
+        'ffmpeg',
+        '-i', source,
+        '-s', 'hd480',
+        '-c:v', 'libx264',
+        '-crf', '23',
+        '-c:a', 'aac',
+        '-strict', '-2',
+        output
+    ]
+    run = subprocess.run(cmd, capture_output=True)
+  
+    
+    
+    
+
+def convert_720p(source, output):
+           
+        cmd = [
         'ffmpeg',
         '-i', source,
         '-s', 'hd720',
@@ -12,14 +31,6 @@ def convert_480p(source):
         '-crf', '23',
         '-c:a', 'aac',
         '-strict', '-2',
-        new_file_name
+        output
     ]
-    run = subprocess.run(cmd, capture_output=True)
-    
-    
-    
-
-def convert_720p(source):
-        new_file_name = source + '720p.mp4'
-        cmd = 'ffmpeg -i "{}" -s hd720 -c:v libx264 -crf 23 -c:a aac -strict -2 "{}"'.format(source, new_file_name)
         run = subprocess.run(cmd, capture_output=True)
