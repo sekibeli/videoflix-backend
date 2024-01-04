@@ -60,20 +60,26 @@ class SignupView(APIView):
 class VideoView(viewsets.ModelViewSet):
     
     serializer_class = VideoSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
  
     # @cache_page(CACHE_TTL)
-    def get_queryset(self, category):
-        current_user = self.request.user #eingloggten user holen
-        if current_user.is_authenticated:
-            return Video.objects.filter(author=current_user)
-        return Video.objects.none()
+    def get_queryset(self):
+        # current_user = self.request.user #eingloggten user holen
+        # if current_user.is_authenticated:
+       
+            return Video.objects.all()
+            # return Video.objects.filter(category=category)
+        # return Video.objects.none()
     
+
+         
+class VideoDetailView(APIView):
     
     # @cache_page(CACHE_TTL)
-    def video_detail(request, movie_id):
+    def get(self,request,pk, format=None):
         try:
-            movie = Video.objects.get(pk=movie_id)
-            return movie
+            video = Video.objects.get(pk=pk)
+            serializer = VideoSerializer(video)
+            return Response(serializer.data)
         except Video.DoesNotExist:
-             return Response({'error': 'Video existiert nicht'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Video existiert nicht'}, status=status.HTTP_404_NOT_FOUND)

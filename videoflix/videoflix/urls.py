@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include('videoflixbackend.urls')),
   
     path('__debug__/', include('debug_toolbar.urls')),
     path('django_rq/', include('django_rq.urls'))
