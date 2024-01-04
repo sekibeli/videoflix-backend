@@ -15,11 +15,9 @@ def video_post_save(sender, instance, created, **kwargs):
           
        
         base, _ = os.path.splitext(instance.video_file.path)
-        # new_file_name = base + '-480p.mp4'
-        # print('newfilename', new_file_name)
-           
+              
         #Job zur KOnvertierung wird in die queue gestellt
-       # queue.enqueue(convert_480p, instance.video_file.path)
+      
         queue.enqueue(convert_480p, instance.video_file.path, base + '-480p.mp4')
         queue.enqueue(convert_720p, instance.video_file.path, base + '-720p.mp4')
        

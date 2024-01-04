@@ -18,7 +18,7 @@ CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
 # Create your views here.
 class LoginView(APIView):
-    @cache_page(CACHE_TTL)
+    # @cache_page(CACHE_TTL)
     def post(self, request, *args, **kwargs):
         email = request.data.get('username')
         password = request.data.get('password')
@@ -62,7 +62,7 @@ class VideoView(viewsets.ModelViewSet):
     serializer_class = VideoSerializer
     permission_classes = [IsAuthenticated]
  
-    @cache_page(CACHE_TTL)
+    # @cache_page(CACHE_TTL)
     def get_queryset(self):
         current_user = self.request.user #eingloggten user holen
         if current_user.is_authenticated:
@@ -70,7 +70,7 @@ class VideoView(viewsets.ModelViewSet):
         return Video.objects.none()
     
     
-    @cache_page(CACHE_TTL)
+    # @cache_page(CACHE_TTL)
     def video_detail(request, movie_id):
         try:
             movie = Video.objects.get(pk=movie_id)
