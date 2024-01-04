@@ -63,7 +63,7 @@ class VideoView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
  
     # @cache_page(CACHE_TTL)
-    def get_queryset(self):
+    def get_queryset(self, category):
         current_user = self.request.user #eingloggten user holen
         if current_user.is_authenticated:
             return Video.objects.filter(author=current_user)
