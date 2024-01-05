@@ -61,6 +61,7 @@ class VideoView(viewsets.ModelViewSet):
     
     serializer_class = VideoSerializer
     # permission_classes = [IsAuthenticated]
+    # ACHTUNG: Ein neuer KOmmentar, der vorher nicht drin war!
  
     # @cache_page(CACHE_TTL)
     def get_queryset(self):
