@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Video
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
+from rest_framework.parsers import MultiPartParser, FormParser
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
@@ -66,8 +67,13 @@ class VideoView(viewsets.ModelViewSet):
     def get_queryset(self):
         # current_user = self.request.user #eingloggten user holen
         # if current_user.is_authenticated:
-       
-            return Video.objects.all()
+        queryset = Video.objects.all()
+        category = self.request.query_params.get('category', None)
+        if category is not None:
+            queryset = queryset.filter(category=category)
+        return queryset          
+    
+    #return Video.objects.all()
             # return Video.objects.filter(category=category)
         # return Video.objects.none()
     
@@ -83,3 +89,17 @@ class VideoDetailView(APIView):
             return Response(serializer.data)
         except Video.DoesNotExist:
             return Response({'error': 'Video existiert nicht'}, status=status.HTTP_404_NOT_FOUND)
+        
+        
+class VideoUploadView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+    # permission_classes = [IsAuthenticated]  
+
+    def post(self, request, *args, **kwargs):
+        video_serializer = VideoSerializer(data=request.data)
+
+        if video_serializer.is_valid():
+            video_serializer.save()
+            return Response(video_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(video_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
