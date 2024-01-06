@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Video
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
+from rest_framework.parsers import MultiPartParser, FormParser
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
@@ -57,30 +58,19 @@ class SignupView(APIView):
         
 
 
-class VideoView(viewsets.ModelViewSet):
+class VideoViewSet(viewsets.ModelViewSet):
     
     serializer_class = VideoSerializer
     # permission_classes = [IsAuthenticated]
     # ACHTUNG: Ein neuer KOmmentar, der vorher nicht drin war!
  
-    # @cache_page(CACHE_TTL)
+  #  @cache_page(CACHE_TTL)
     def get_queryset(self):
         # current_user = self.request.user #eingloggten user holen
         # if current_user.is_authenticated:
-       
-            return Video.objects.all()
-            # return Video.objects.filter(category=category)
-        # return Video.objects.none()
-    
-
-         
-class VideoDetailView(APIView):
-    
-    # @cache_page(CACHE_TTL)
-    def get(self,request,pk, format=None):
-        try:
-            video = Video.objects.get(pk=pk)
-            serializer = VideoSerializer(video)
-            return Response(serializer.data)
-        except Video.DoesNotExist:
-            return Response({'error': 'Video existiert nicht'}, status=status.HTTP_404_NOT_FOUND)
+        queryset = Video.objects.all()
+        category = self.request.query_params.get('category', None)
+        if category is not None:
+            queryset = queryset.filter(category=category)
+        return queryset          
+ 
