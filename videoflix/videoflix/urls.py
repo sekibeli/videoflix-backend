@@ -24,7 +24,8 @@ urlpatterns = [
     path('', include('videoflixbackend.urls')),
   
     path('__debug__/', include('debug_toolbar.urls')),
-    path('django_rq/', include('django_rq.urls'))
+    path('django_rq/', include('django_rq.urls')),
+    path('accounts/', include('allauth.urls')),
    
 
 ]  + static(settings.MEDIA_URL , document_root = settings.MEDIA_ROOT)
