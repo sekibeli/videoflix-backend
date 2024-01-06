@@ -48,7 +48,10 @@ INSTALLED_APPS = [
     'django_rq',
     'import_export',
     'user',
+    'allauth',
+    'allauth.account',
 ]
+
 AUTH_USER_MODEL = 'user.CustomUser'
 
 MIDDLEWARE = [
@@ -160,6 +163,37 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+
+ACCOUNT_EMAIL_REQUIRED = True
+
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+
+# Das sind die Einstellungen für den Server (wenn wir das Projetk z.B. auf google cloud hosten)
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'IhreGmailAdresse@gmail.com'
+# EMAIL_HOST_PASSWORD = 'IhrPasswort'
+
+
+# Das sind die Einstellungen für das lokal Entwickeln der App. Damit kann ich Tests über Postman ausführen
+# Diesen Befehl muss man vorher im Terminal ausführen bevor man mit Postman testet
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 1025
+EMAIL_USE_TLS = False
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+
 
 
 # Internationalization
