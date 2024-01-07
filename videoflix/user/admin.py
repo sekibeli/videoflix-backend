@@ -19,7 +19,9 @@ class CustomUserAdmin(admin.ModelAdmin):
                     'first_name',
                     'last_name',
                     'email',
-                   
+
+                    'is_verified',
+
                     'phone',
                     'adress',
                 )

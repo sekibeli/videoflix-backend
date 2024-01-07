@@ -147,6 +147,20 @@ DATABASES = {
 }
 
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         # "NAME": BASE_DIR / "db.sqlite3",
+#          "NAME": "videodb",
+#         "USER": "postgres",
+#         "PASSWORD": "Primax21!",
+#         "HOST": "localhost",
+#         "PORT": "5432",
+        
+#     }
+# }
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -164,6 +178,17 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+DEFAULT_FROM_EMAIL = 'Alcazar85@gmx.de'
+FRONTEND_URL = 'http://localhost:4200'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'mail.gmx.net' 
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'Alcazar85@gmx.de' 
+EMAIL_HOST_PASSWORD = '' # Hier Passwort von der Email ?? 
+
 
 
 AUTHENTICATION_BACKENDS = [
