@@ -34,3 +34,18 @@ def convert_720p(source, output):
         output
     ]
         run = subprocess.run(cmd, capture_output=True)
+
+
+def convert_1080p(source, output):
+           
+        cmd = [
+        'ffmpeg',
+        '-i', source,
+        '-s', 'hd1080',
+        '-c:v', 'libx264',
+        '-crf', '23',
+        '-c:a', 'aac',
+        '-strict', '-2',
+        output
+    ]
+        run = subprocess.run(cmd, capture_output=True)
