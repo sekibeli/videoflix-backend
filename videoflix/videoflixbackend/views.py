@@ -8,53 +8,72 @@ from rest_framework import status
 from rest_framework import viewsets
 from django.views.decorators.cache import cache_page
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
-from .serializers import VideoSerializer
+from user.models import CustomUser
+from .serializers import VideoSerializer, CustomUserSerializer
 from rest_framework.permissions import IsAuthenticated
 from .models import Video
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
+from django.core.mail import send_mail
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
-# Create your views here.
-class LoginView(APIView):
-    # @cache_page(CACHE_TTL)
-    def post(self, request, *args, **kwargs):
-        email = request.data.get('username')
-        password = request.data.get('password')
-        user = authenticate(username=email, password=password)
-       
-        if user:
-            print('Hi')
-            token, created = Token.objects.get_or_create(user=user)
-            print(token)
-            return Response({
-                'token': token.key,
-                'user_id': user.pk
-                
-            })
-        else:
-            return Response({'detail': 'Invalid credentials'}, status=http_status.HTTP_400_BAD_REQUEST)
- 
-class SignupView(APIView):
-    
+
+class SignupView(APIView):    
+    permission_classes = []
+    authentication_classes = []
+
     def post(self, request):
-        first_name = request.data.get('first_name')
-        last_name = request.data.get('last_name')
-        email = request.data.get('username')
+        serializer = CustomUserSerializer(data=request.data)
+        if CustomUser.objects.filter(email=request.data["email"]).exists():
+            return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer.is_valid(raise_exception=True)        
+        user = serializer.save()
+
+        self.send_verification_email(user)
+
+        return Response({"user": serializer.data}, status=status.HTTP_201_CREATED)
+    
+
+    def send_verification_email(self, user):
+        subject = 'Please confirm your email'
+        message = f'Please use this link to verify your email: {settings.FRONTEND_URL}/verify/{user.verification_token}'
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+
+
+class VerifyEmailView(APIView):
+    def get(self, request, token, format=None):
+        try:
+            user = CustomUser.objects.get(verification_token=token)
+            user.is_verified = True
+            user.save()
+            return Response({"message": "E-Mail successfully verified."}, status=status.HTTP_200_OK)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "Invaild Token"}, status=status.HTTP_400_BAD_REQUEST)
+        
+ 
+class LoginView(APIView):
+    permission_classes = []
+    authentication_classes = []
+
+    def post(self, request):
+        username = request.data.get('username')
         password = request.data.get('password')
+        user = authenticate(username=username, password=password)
 
-        if not all([first_name, last_name, email, password]):
-            return Response({'error': 'Alle Felder müssen ausgefüllt sein.'}, status=status.HTTP_400_BAD_REQUEST)
+        if user is not None:
+            if not user.is_verified:
+                return Response({"error": "Please verify your email first."}, status=status.HTTP_401_UNAUTHORIZED)
 
-        if User.objects.filter(username=email).exists():
-            return Response({'error': 'Dieser Benutzer existiert bereits.'}, status=status.HTTP_400_BAD_REQUEST)
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({"token": token.key}, status=status.HTTP_200_OK)
 
-        user = User.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name)
-        
-        token = Token.objects.create(user=user)
-        return Response({'token': token.key}, status=status.HTTP_201_CREATED)       
-        
+        return Response({"error": "Invalid login data"}, status=status.HTTP_401_UNAUTHORIZED)             
 
 
 class VideoView(viewsets.ModelViewSet):

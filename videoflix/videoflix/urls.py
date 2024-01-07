@@ -18,14 +18,16 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
+from videoflixbackend.views import LoginView, SignupView
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('videoflixbackend.urls')),
+    path('login/', LoginView.as_view(), name='login'),
+    path('signup/', SignupView.as_view(), name='signup'),
   
     path('__debug__/', include('debug_toolbar.urls')),
-    path('django_rq/', include('django_rq.urls')),
-    path('accounts/', include('allauth.urls')),
-   
+    path('django_rq/', include('django_rq.urls')),  
 
 ]  + static(settings.MEDIA_URL , document_root = settings.MEDIA_ROOT)
