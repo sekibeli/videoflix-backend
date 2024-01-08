@@ -184,7 +184,7 @@ EMAIL_HOST = 'mail.gmx.net'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'Alcazar85@gmx.de' 
-EMAIL_HOST_PASSWORD = '' # Hier Passwort von der Email ?? 
+EMAIL_HOST_PASSWORD = '' # Hier Passwort von der Email 
 
 
 
