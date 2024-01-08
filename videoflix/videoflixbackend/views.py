@@ -14,11 +14,15 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Video
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
+
 from django.core.mail import send_mail
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
+
+from django.utils.decorators import method_decorator
+
 from rest_framework.parsers import MultiPartParser, FormParser
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
@@ -81,7 +85,11 @@ class VideoViewSet(viewsets.ModelViewSet):
     
     serializer_class = VideoSerializer
     # permission_classes = [IsAuthenticated]
-    # ACHTUNG: Ein neuer KOmmentar, der vorher nicht drin war!
+   
+   
+    # @method_decorator(cache_page(CACHE_TTL))
+    def list(self, request, *args, **kwargs):
+        return super(VideoViewSet, self).list(request, *args, **kwargs)
  
   #  @cache_page(CACHE_TTL)
     def get_queryset(self):
