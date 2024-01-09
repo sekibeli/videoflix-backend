@@ -12,8 +12,9 @@ class VideoSerializer(serializers.ModelSerializer):
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'password', 'is_verified', 'phone', 'adress']
+        fields = ['id', 'username', 'email', 'password', 'is_verified', 'phone']
 
         extra_kwargs = {
+            'password': {'write_only': True},
             'is_verified': {'read_only': True},
         }
