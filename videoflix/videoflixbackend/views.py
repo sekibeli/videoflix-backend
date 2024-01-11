@@ -16,11 +16,10 @@ from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from django.core.mail import send_mail
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
-
 from django.contrib.auth import authenticate
-from django.contrib.auth.hashers import make_password
 
 from django.utils.decorators import method_decorator
 
@@ -35,24 +34,15 @@ class SignupView(APIView):
 
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            if CustomUser.objects.filter(email=request.data["email"]).exists():
-                return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        if CustomUser.objects.filter(email=request.data["email"]).exists():
+            return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer.is_valid(raise_exception=True)        
+        user = serializer.save()
 
-            user = CustomUser(
-                username=serializer.validated_data['username'],
-                email=serializer.validated_data['email'],
-                phone=serializer.validated_data.get('phone', ''),
-                # address=serializer.validated_data.get('address', ''),
-            )
-            user.set_password(serializer.validated_data['password'])  
-            user.save()
+        self.send_verification_email(user)
 
-            self.send_verification_email(user)
-
-            return Response({"user": CustomUserSerializer(user).data}, status=status.HTTP_201_CREATED)
-
-
+        return Response({"user": serializer.data}, status=status.HTTP_201_CREATED)
     
 
     def send_verification_email(self, user):
@@ -88,7 +78,7 @@ class LoginView(APIView):
             token, created = Token.objects.get_or_create(user=user)
             return Response({"token": token.key}, status=status.HTTP_200_OK)
 
-        return Response({"error": "Invalid login data"}, status=status.HTTP_401_UNAUTHORIZED)             
+        return Response({"error": "Invalid login data"}, status=status.HTTP_401_UNAUTHORIZED)                         
     
 
 class LogoutView(APIView):
@@ -114,7 +104,6 @@ class LoggeduserView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class VideoViewSet(viewsets.ModelViewSet):
