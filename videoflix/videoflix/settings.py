@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "videoflixbackend.apps.VideoflixbackendConfig",
     "rest_framework",
     "rest_framework.authtoken",
+    'django_rest_passwordreset'
     'debug_toolbar',
     'django_rq',
     'import_export',
@@ -172,7 +173,7 @@ DEFAULT_FROM_EMAIL = os.environ.get('emailUser')
 FRONTEND_URL = 'http://localhost:4200'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'mail.gmx.net' 
+EMAIL_HOST = os.environ.get('emailHost')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('emailUser') 

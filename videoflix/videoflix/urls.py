@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
-from videoflixbackend.views import LoginView, SignupView
+from videoflixbackend.views import LoginView, SignupView, LoggeduserView, VerifyEmailView
 
 
 urlpatterns = [
@@ -26,7 +26,9 @@ urlpatterns = [
     path('', include('videoflixbackend.urls')),
     path('login/', LoginView.as_view(), name='login'),
     path('signup/', SignupView.as_view(), name='signup'),
-  
+    path('edit-user/', LoggeduserView.as_view(), name='edit-user'),
+    path('verify/<str:token>/', VerifyEmailView.as_view(), name='verify-email'),
+    path('password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
     path('__debug__/', include('debug_toolbar.urls')),
 
     path('django_rq/', include('django_rq.urls')),  
