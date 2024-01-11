@@ -69,6 +69,16 @@ class VerifyEmailView(APIView):
             return Response({"message": "E-Mail successfully verified."}, status=status.HTTP_200_OK)
         except CustomUser.DoesNotExist:
             return Response({"error": "Invaild Token"}, status=status.HTTP_400_BAD_REQUEST)
+        """
+            Hey [User’s Name],
+
+            Thank you for joining [Your Platform]! To activate your account and start streaming and sharing videos, please click the verification link below:
+
+            [Verify My Account]
+
+            Best Regards,
+            [Your Name]
+        """
         
  
 class LoginView(APIView):
