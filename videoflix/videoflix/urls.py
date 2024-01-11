@@ -18,7 +18,12 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
-from videoflixbackend.views import LoginView, SignupView, LoggeduserView, VerifyEmailView
+from rest_framework import routers
+from videoflixbackend.views import LoginView, SignupView, LoggeduserView, VerifyEmailView, VideoViewSet
+
+router = routers.DefaultRouter()
+
+router.register(r'videos', VideoViewSet, basename='video')
 
 
 urlpatterns = [

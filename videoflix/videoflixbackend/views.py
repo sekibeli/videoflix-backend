@@ -17,12 +17,9 @@ from rest_framework.authtoken.models import Token
 from django.core.mail import send_mail
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
-
 from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import make_password
-
 from django.utils.decorators import method_decorator
-
 from rest_framework.parsers import MultiPartParser, FormParser
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
