@@ -22,6 +22,7 @@ class CustomUserAdmin(admin.ModelAdmin):
                     'is_verified',
                     'phone',
                     'adress',
+                    'password'
                 )
             }
         ),

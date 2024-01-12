@@ -19,7 +19,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
-from django.contrib.auth import authenticate
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
@@ -39,7 +38,7 @@ class SignupView(APIView):
         if CustomUser.objects.filter(email=request.data["email"]).exists():
             return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
         
-        serializer.is_valid(raise_exception=True)        
+        serializer.is_valid(raise_exception=True)     
         user = serializer.save()
 
         self.send_verification_email(user)
@@ -131,7 +130,7 @@ class VideoViewSet(viewsets.ModelViewSet):
     # permission_classes = [IsAuthenticated]
    
    
-    @method_decorator(cache_page(CACHE_TTL))
+    # @method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
         return super(VideoViewSet, self).list(request, *args, **kwargs)
  
