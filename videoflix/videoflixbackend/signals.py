@@ -73,7 +73,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
         'username': reset_password_token.user.username,
         'email': reset_password_token.user.email,
         'reset_password_url': "{}?token={}".format(
-            instance.request.build_absolute_uri(reverse('password_reset:reset-password-confirm')),
+            instance.request.build_absolute_uri(reverse('password-reset:reset-password-confirm')),
             reset_password_token.key)
     }
 
@@ -81,13 +81,9 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
     email_plaintext_message = render_to_string('email/user_reset_password.txt', context)
          
     msg = EmailMultiAlternatives(
-        # title:
         "Password Reset for {title}".format(title="Password Reset for Videoflix"),
-        # message:
         email_plaintext_message,
-        # from: Hier sollte später eine richtige Email stehen
-        "noreply@somehost.local",
-        # to:
+        "Alcazar85@gmx.de",
         [reset_password_token.user.email]
     )
     msg.attach_alternative(email_html_message, "text/html")

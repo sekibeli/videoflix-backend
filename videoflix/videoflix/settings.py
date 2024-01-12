@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     "videoflixbackend.apps.VideoflixbackendConfig",
     "rest_framework",
     "rest_framework.authtoken",
-    'django_rest_passwordreset'
+    'django_rest_passwordreset',
     'debug_toolbar',
     'django_rq',
     'import_export',

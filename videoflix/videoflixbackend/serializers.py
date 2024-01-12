@@ -17,3 +17,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'is_verified': {'read_only': True},
         }
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    token = serializers.CharField()
+    password = serializers.CharField()

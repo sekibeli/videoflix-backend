@@ -19,7 +19,7 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework import routers
-from videoflixbackend.views import LoginView, SignupView, LoggeduserView, VerifyEmailView, VideoViewSet
+from videoflixbackend.views import LoginView, SignupView, LoggeduserView, VerifyEmailView, VideoViewSet, ResetPasswordView
 
 router = routers.DefaultRouter()
 
@@ -33,7 +33,8 @@ urlpatterns = [
     path('signup/', SignupView.as_view(), name='signup'),
     path('edit-user/', LoggeduserView.as_view(), name='edit-user'),
     path('verify/<str:token>/', VerifyEmailView.as_view(), name='verify-email'),
-    path('password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
+    path('forgot-password/', include('django_rest_passwordreset.urls', namespace='forgot-password')),
+    path('reset-password/', ResetPasswordView.as_view(), name='reset-password'),
     path('__debug__/', include('debug_toolbar.urls')),
 
     path('django_rq/', include('django_rq.urls')),  

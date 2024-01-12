@@ -9,7 +9,7 @@ from rest_framework import viewsets
 from django.views.decorators.cache import cache_page
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from user.models import CustomUser
-from .serializers import VideoSerializer, CustomUserSerializer
+from .serializers import VideoSerializer, CustomUserSerializer, ResetPasswordSerializer
 from rest_framework.permissions import IsAuthenticated
 from .models import Video
 from django.contrib.auth.models import User
@@ -21,6 +21,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.hashers import make_password
 from django.utils.decorators import method_decorator
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.contrib.auth.tokens import default_token_generator
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
@@ -47,8 +48,6 @@ class SignupView(APIView):
             self.send_verification_email(user)
 
             return Response({"user": CustomUserSerializer(user).data}, status=status.HTTP_201_CREATED)
-
-
     
 
     def send_verification_email(self, user):
@@ -67,7 +66,24 @@ class VerifyEmailView(APIView):
         except CustomUser.DoesNotExist:
             return Response({"error": "Invaild Token"}, status=status.HTTP_400_BAD_REQUEST)
         
- 
+
+class ResetPasswordView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            try:
+                user = User.objects.get(email=data['email'])
+                if default_token_generator.check_token(user, data['token']):
+                    user.set_password(data['password'])
+                    user.save()
+                    return Response({'message': 'Successfully reset password.'})
+                return Response({'error': 'Invalid Token.'}, status=status.HTTP_400_BAD_REQUEST)
+            except User.DoesNotExist:
+                return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        
 class LoginView(APIView):
     permission_classes = []
     authentication_classes = []
