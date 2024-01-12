@@ -10,7 +10,7 @@ from django.views.decorators.cache import cache_page
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from user.models import CustomUser
 from .serializers import VideoSerializer, CustomUserSerializer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Video
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
@@ -20,7 +20,9 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from django.contrib.auth import authenticate
-
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 from django.utils.decorators import method_decorator
 
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -47,11 +49,28 @@ class SignupView(APIView):
 
     def send_verification_email(self, user):
         subject = 'Please confirm your email'
-        message = f'Please use this link to verify your email: {settings.FRONTEND_URL}/verify/{user.verification_token}'
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+        context = {
+            'username': user.username,
+            'verification_url': f'{settings.FRONTEND_URL}/verify/{user.verification_token}'
+        }
+        
+        html_content = render_to_string('email_verification.html', context)
+        text_content = render_to_string('email_verification.txt', context)
+
+        email = EmailMultiAlternatives(
+            subject,
+            text_content,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email]
+        )
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+
 
 
 class VerifyEmailView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
     def get(self, request, token, format=None):
         try:
             user = CustomUser.objects.get(verification_token=token)
@@ -112,7 +131,7 @@ class VideoViewSet(viewsets.ModelViewSet):
     # permission_classes = [IsAuthenticated]
    
    
-    # @method_decorator(cache_page(CACHE_TTL))
+    @method_decorator(cache_page(CACHE_TTL))
     def list(self, request, *args, **kwargs):
         return super(VideoViewSet, self).list(request, *args, **kwargs)
  
