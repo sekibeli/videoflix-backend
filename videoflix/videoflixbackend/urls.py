@@ -6,6 +6,7 @@ router = routers.DefaultRouter()
 
 router.register(r'videos', VideoViewSet, basename='video')
 
+
 urlpatterns = [
     
     path('login/',  LoginView.as_view(), name='login'),
