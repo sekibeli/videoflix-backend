@@ -5,6 +5,7 @@ from videoflixbackend.tasks import convert_480p, convert_720p, convert_1080p
 from .models import Video
 from django.db.models.signals import post_save, post_delete, pre_save
 import django_rq
+from django.core.cache import cache
 
 @receiver(post_save, sender =Video)
 def video_post_save(sender, instance, created, **kwargs):
@@ -21,6 +22,8 @@ def video_post_save(sender, instance, created, **kwargs):
         queue.enqueue(convert_720p, instance.video_file.path, base + '-720p.mp4')
         queue.enqueue(convert_1080p, instance.video_file.path, base + '-1080p.mp4')
        
+         #Löschen des Cache
+        cache.delete('video_list_cache_key')
 
 
 
@@ -34,7 +37,8 @@ def video_post_delete(sender, instance, **kwargs):
             os.remove( base + '-480p.mp4')
             os.remove( base + '-1080p.mp4')
             print ('Video wurde gelöscht')   
-        
+             #Löschen des Cache
+            cache.delete('video_list_cache_key')
 
 
 @receiver(pre_save, sender = Video)
