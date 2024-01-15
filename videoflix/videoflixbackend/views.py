@@ -146,7 +146,8 @@ class VideoViewSet(viewsets.ModelViewSet):
         return queryset      
     
    
-    
+    def perform_create(self, serializer):
+        serializer.save(created_from=self.request.user)
  
 # class UserViewSet(viewsets.ModelViewSet):
 #     serializer_class = CustomUserSerializer
