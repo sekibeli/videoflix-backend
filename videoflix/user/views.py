@@ -9,6 +9,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
+from rest_framework import viewsets
 
 from user.models import CustomUser
 from videoflixbackend.serializers import CustomUserSerializer
@@ -126,7 +127,14 @@ class DeleteUserView(APIView):
 
 
 
-
+class UserViewSet(viewsets.ModelViewSet):
+    serializer_class = CustomUserSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return CustomUser.objects.all()  
+        return CustomUser.objects.none() 
 
 
 
