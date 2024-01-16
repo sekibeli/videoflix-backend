@@ -4,7 +4,6 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 
 from rest_framework.views import APIView
-from rest_framework import status as http_status
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -113,7 +112,17 @@ class LoggeduserView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class DeleteUserView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
+    def delete(self, request):
+        user = request.user
+        try:
+            user.delete()
+            return Response({"message": "User account deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response({"error": "User account deletion failed"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 

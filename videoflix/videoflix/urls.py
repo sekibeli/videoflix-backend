@@ -24,7 +24,8 @@ from user.views import (
     VerifyEmailView,
     LoginView,
     LogoutView,
-    LoggeduserView
+    LoggeduserView,
+    DeleteUserView
 )
 
 
@@ -37,6 +38,7 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('edit-user/', LoggeduserView.as_view(), name='edit-user'),
+    path('delete-user/', DeleteUserView.as_view(), name='delete-user'),
 
     path('__debug__/', include('debug_toolbar.urls')),
     path('django_rq/', include('django_rq.urls')),  
