@@ -1,6 +1,8 @@
 from django.urls import path, include
 from rest_framework import routers
-from .views import LoginView, SignupView, VideoViewSet
+
+from user.views import LoginView, SignupView
+from .views import VideoViewSet
 
 router = routers.DefaultRouter()
 
