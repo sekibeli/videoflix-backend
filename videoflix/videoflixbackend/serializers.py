@@ -18,11 +18,3 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True},
             'is_verified': {'read_only': True},
         }
-
-    def create(self, validated_data):
-        user = CustomUser(**validated_data)
-        password = validated_data.get('password')
-        if password:
-            user.set_password(password)
-        user.save()
-        return user

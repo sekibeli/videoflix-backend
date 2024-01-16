@@ -33,15 +33,18 @@ class SignupView(APIView):
     permission_classes = []
     authentication_classes = []
 
+
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
         if CustomUser.objects.filter(email=request.data["email"]).exists():
-            return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "An error occured"}, status=status.HTTP_400_BAD_REQUEST)
         
-        serializer.is_valid(raise_exception=True)     
-        user = serializer.save()
-
-        self.send_verification_email(user)
+        serializer.is_valid(raise_exception=True)    
+        user = CustomUser(**serializer.data)
+        password = request.data.get('password')
+        user.set_password(password)
+        user.save()
+        self.send_verification_email(user) #Try except einbauen?
 
         return Response({"user": serializer.data}, status=status.HTTP_201_CREATED)
     
