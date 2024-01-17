@@ -12,9 +12,11 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -26,7 +28,14 @@ SECRET_KEY = "django-insecure-%x)e9k&at^%34xb12u^)=1pw5xczj%q)*h*(pm48bo(c#5hpaa
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:4200',
+    ]
 
 IMPORT_EXPORT_USE_TRANSACTIONS = True
 
@@ -48,21 +57,18 @@ INSTALLED_APPS = [
     'django_rq',
     'import_export',
     'user',
-    'allauth',
-    'allauth.account',
 ]
 
 AUTH_USER_MODEL = 'user.CustomUser'
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
-     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    'allauth.account.middleware.AccountMiddleware',
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
    
@@ -73,7 +79,7 @@ ROOT_URLCONF = "videoflix.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / 'templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -109,7 +115,7 @@ CACHES = {
 RQ_QUEUES = {
     'default': {
         'HOST': 'localhost',
-        # 'PASSWORD':'foobared',
+        'PASSWORD':'foobared',
         'PORT': 6379,
         'DB': 0,
         'DEFAULT_TIMEOUT': 360,
@@ -133,32 +139,19 @@ WSGI_APPLICATION = "videoflix.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         # "NAME": BASE_DIR / "db.sqlite3",
          "NAME": "videodb",
-        "USER": "jgeo",
-        "PASSWORD": "justAPW",
+        "USER": os.environ.get('databaseUser'),
+        "PASSWORD": os.environ.get('databasePassword'),
         "HOST": "localhost",
         "PORT": "5432",
         
     }
 }
-
-
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         # "NAME": BASE_DIR / "db.sqlite3",
-#          "NAME": "videodb",
-#         "USER": "postgres",
-#         "PASSWORD": "Primax21!",
-#         "HOST": "localhost",
-#         "PORT": "5432",
-        
-#     }
-# }
 
 
 # Password validation
@@ -179,47 +172,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-DEFAULT_FROM_EMAIL = 'Alcazar85@gmx.de'
+DEFAULT_FROM_EMAIL = os.environ.get('emailUser')
 FRONTEND_URL = 'http://localhost:4200'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'mail.gmx.net' 
+EMAIL_HOST = os.environ.get('emailHost') 
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'Alcazar85@gmx.de' 
-EMAIL_HOST_PASSWORD = '' # Hier Passwort von der Email ?? 
-
-
-
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
-]
-
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-
-ACCOUNT_EMAIL_REQUIRED = True
-
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-
-# Das sind die Einstellungen für den Server (wenn wir das Projetk z.B. auf google cloud hosten)
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'IhreGmailAdresse@gmail.com'
-# EMAIL_HOST_PASSWORD = 'IhrPasswort'
-
-
-# Das sind die Einstellungen für das lokal Entwickeln der App. Damit kann ich Tests über Postman ausführen
-# Diesen Befehl muss man vorher im Terminal ausführen bevor man mit Postman testet
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 1025
-EMAIL_USE_TLS = False
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
-
+EMAIL_HOST_USER = os.environ.get('emailUser') 
+EMAIL_HOST_PASSWORD = os.environ.get('emailPassword')
 
 
 # Internationalization
@@ -243,3 +204,10 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+}

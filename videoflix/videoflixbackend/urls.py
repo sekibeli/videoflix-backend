@@ -1,10 +1,15 @@
 from django.urls import path, include
 from rest_framework import routers
-from .views import LoginView, SignupView, VideoViewSet
+
+from user.views import LoginView, SignupView, UserViewSet
+from .views import VideoViewSet
 
 router = routers.DefaultRouter()
 
 router.register(r'videos', VideoViewSet, basename='video')
+router.register(r'user', UserViewSet, basename='user')
+
+
 
 urlpatterns = [
     
