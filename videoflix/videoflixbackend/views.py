@@ -9,6 +9,8 @@ from django.core.cache import cache
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.response import Response
+from rest_framework.decorators import action
 
 from .serializers import VideoSerializer
 from .models import Video
@@ -44,6 +46,7 @@ class VideoViewSet(viewsets.ModelViewSet):
         current_user = self.request.user #eingloggten user holen
         if current_user.is_authenticated:
             queryset = Video.objects.all()
+                    
             category = self.request.query_params.get('category', None)
             if category is not None:
                     queryset = queryset.filter(category=category)
@@ -53,14 +56,6 @@ class VideoViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(created_from=self.request.user)
  
-# class UserViewSet(viewsets.ModelViewSet):
-#     serializer_class = CustomUserSerializer
-#     permission_classes = [IsAuthenticated]
-    
-#     def get_queryset(self):
-#         if self.request.user.is_authenticated:
-#             return CustomUser.objects.all()  
-#         return CustomUser.objects.none() 
 
 
 
