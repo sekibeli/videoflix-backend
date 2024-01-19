@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
+from django.shortcuts import get_object_or_404
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -13,6 +14,7 @@ from rest_framework import viewsets
 
 from user.models import CustomUser
 from videoflixbackend.serializers import CustomUserSerializer
+from videoflixbackend.models import Video
 
 
 class SignupView(APIView):    
@@ -137,6 +139,22 @@ class UserViewSet(viewsets.ModelViewSet):
         return CustomUser.objects.none() 
 
 
+class ToggleLike(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request, videoId):
+        user = request.user
+        video = get_object_or_404(Video, pk=videoId)
 
+        if user in video.likes.all():
+            video.likes.remove(user)
+            liked = False
+        else:
+            video.likes.add(user)
+            liked = True
+
+        likes_ids = list(video.likes.values_list('id', flat=True))
+
+        return Response({'liked': liked, 'likes': likes_ids}, status=status.HTTP_200_OK)
 
