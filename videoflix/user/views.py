@@ -157,7 +157,6 @@ class ToggleLike(APIView):
             liked = True
 
         cache.delete('video_list_cache_key')
-        likes_ids = list(video.likes.values_list('id', flat=True)) # evtl löschen
 
-        return Response({'liked': liked, 'likes': likes_ids}, status=status.HTTP_200_OK)
+        return Response({'liked': liked}, status=status.HTTP_200_OK)
 

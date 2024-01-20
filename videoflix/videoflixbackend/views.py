@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate
 from django.views.decorators.cache import cache_page
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
@@ -55,4 +55,9 @@ class VideoViewSet(viewsets.ModelViewSet):
    
     def perform_create(self, serializer):
         serializer.save(created_from=self.request.user)
+
+    def retrieve(self, request, *args, **kwargs):
+         video = get_object_or_404(Video, pk=kwargs['pk'])
+         serializer = VideoSerializer(video, context={'request': request})
+         return Response(serializer.data)
  
