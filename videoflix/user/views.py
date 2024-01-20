@@ -16,6 +16,8 @@ from user.models import CustomUser
 from videoflixbackend.serializers import CustomUserSerializer
 from videoflixbackend.models import Video
 
+from django.core.cache import cache
+
 
 class SignupView(APIView):    
     permission_classes = []
@@ -154,7 +156,8 @@ class ToggleLike(APIView):
             video.likes.add(user)
             liked = True
 
-        likes_ids = list(video.likes.values_list('id', flat=True))
+        cache.delete('video_list_cache_key')
+        likes_ids = list(video.likes.values_list('id', flat=True)) # evtl löschen
 
         return Response({'liked': liked, 'likes': likes_ids}, status=status.HTTP_200_OK)
 
