@@ -61,3 +61,6 @@ class VideoViewSet(viewsets.ModelViewSet):
          serializer = VideoSerializer(video, context={'request': request})
          return Response(serializer.data)
  
+    def perform_update(self, serializer):
+        serializer.save(created_from=self.request.user)
+    
