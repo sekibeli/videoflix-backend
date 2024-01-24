@@ -14,6 +14,7 @@ from rest_framework.decorators import action
 
 from .serializers import VideoSerializer
 from .models import Video
+from datetime import datetime, timedelta
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
@@ -64,3 +65,12 @@ class VideoViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(created_from=self.request.user)
     
+   
+    
+    @action(detail=False, methods=['get'])
+    def videos_today(self, request):
+        today = datetime.now().date()
+        tomorrow = today + timedelta(days=1)
+        queryset = Video.objects.filter(created_at__gte=today, created_at__lt=tomorrow)
+        serializer = VideoSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
