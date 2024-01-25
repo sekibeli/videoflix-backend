@@ -5,6 +5,7 @@ from django.views.decorators.cache import cache_page
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
+from django.db.models import Count
 
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -74,3 +75,15 @@ class VideoViewSet(viewsets.ModelViewSet):
         queryset = Video.objects.filter(created_at__gte=today, created_at__lt=tomorrow)
         serializer = VideoSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
+    
+    def popular_videos(request):
+    # Videos mit der Anzahl der Likes annotieren
+        videos_with_like_count = Video.objects.annotate(likes_count=Count('likes')).order_by('-likes_count')
+
+    # Optional: Limitieren Sie die Anzahl der zurückgegebenen Videos
+        videos_with_like_count = videos_with_like_count[:10]  # Top 10 Videos
+
+        context = {
+        'videos': videos_with_like_count
+         }
+        return render(request, 'template_name.html', context)
