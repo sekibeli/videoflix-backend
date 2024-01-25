@@ -28,6 +28,7 @@ from user.views import (
     LogoutView,
     LoggeduserView,
     DeleteUserView,
+    ToggleLike,
     UserViewSet
 )
 # router = routers.DefaultRouter()
@@ -43,7 +44,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('edit-user/', LoggeduserView.as_view(), name='edit-user'),
     path('delete-user/', DeleteUserView.as_view(), name='delete-user'),
-   
+    path('toggle_like/<int:videoId>', ToggleLike.as_view(), name='toggle-like'),
 
     path('__debug__/', include('debug_toolbar.urls')),
     path('django_rq/', include('django_rq.urls')),  

@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate
 from django.views.decorators.cache import cache_page
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
@@ -14,6 +14,7 @@ from rest_framework.decorators import action
 
 from .serializers import VideoSerializer
 from .models import Video
+from datetime import datetime, timedelta
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
@@ -55,8 +56,21 @@ class VideoViewSet(viewsets.ModelViewSet):
    
     def perform_create(self, serializer):
         serializer.save(created_from=self.request.user)
+
+    def retrieve(self, request, *args, **kwargs):
+         video = get_object_or_404(Video, pk=kwargs['pk'])
+         serializer = VideoSerializer(video, context={'request': request})
+         return Response(serializer.data)
  
-
-
-
-        
+    def perform_update(self, serializer):
+        serializer.save(created_from=self.request.user)
+    
+   
+    
+    @action(detail=False, methods=['get'])
+    def videos_today(self, request):
+        today = datetime.now().date()
+        tomorrow = today + timedelta(days=1)
+        queryset = Video.objects.filter(created_at__gte=today, created_at__lt=tomorrow)
+        serializer = VideoSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
