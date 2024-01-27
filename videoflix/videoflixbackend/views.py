@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate
 from django.views.decorators.cache import cache_page
@@ -6,6 +7,7 @@ from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
 from django.db.models import Count
+from django.core import serializers
 
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -90,14 +92,12 @@ class VideoViewSet(viewsets.ModelViewSet):
     
     
     @action(detail=False, methods=['get'])
-    def popular_videos(request):
-    # Videos mit der Anzahl der Likes annotieren
-        videos_with_like_count = Video.objects.annotate(likes_count=Count('likes')).order_by('-likes_count')
+    def popular_videos(self, request):
+   
+        videos_with_like_count = Video.objects.annotate(likes_count=Count('likes')).order_by('-likes_count')[:10]
 
-    #Limitierung der Videos
-        videos_with_like_count = videos_with_like_count[:10]  # Top 10 Videos
+        # Verwenden des VideoSerializers zur Serialisierung der Video-Daten
+        serializer = VideoSerializer(videos_with_like_count, many=True, context={'request': request})
 
-        context = {
-        'videos': videos_with_like_count
-         }
-        return render(request, 'template_name.html', context)
+        # Senden der serialisierten Daten als Response
+        return Response(serializer.data)
