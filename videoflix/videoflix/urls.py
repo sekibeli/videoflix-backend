@@ -32,6 +32,10 @@ from user.views import (
     ToggleLike,
     UserViewSet
 )
+
+from videoflixbackend.views import VideoViewSet
+
+
 # router = routers.DefaultRouter()
 # router.register(r'user', UserViewSet, basename='user')
 
@@ -46,7 +50,7 @@ urlpatterns = [
     path('edit-user/', LoggeduserView.as_view(), name='edit-user'),
     path('delete-user/', DeleteUserView.as_view(), name='delete-user'),
     path('toggle_like/<int:videoId>', ToggleLike.as_view(), name='toggle-like'),
-     path('popular-videos/', popular_videos.as_view(), name='popular_videos'),
+     path('popular-videos/', VideoViewSet.as_view({'get': 'popular_videos'}), name='popular_videos'),
 
     path('__debug__/', include('debug_toolbar.urls')),
     path('django_rq/', include('django_rq.urls')),  

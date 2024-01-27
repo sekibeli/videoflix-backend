@@ -57,6 +57,7 @@ class VideoViewSet(viewsets.ModelViewSet):
    
     def perform_create(self, serializer):
         serializer.save(created_from=self.request.user)
+        print(self.request.data) 
 
     def retrieve(self, request, *args, **kwargs):
          video = get_object_or_404(Video, pk=kwargs['pk'])
@@ -65,6 +66,7 @@ class VideoViewSet(viewsets.ModelViewSet):
  
     def perform_update(self, serializer):
         serializer.save(created_from=self.request.user)
+        
     
    
     
@@ -76,11 +78,23 @@ class VideoViewSet(viewsets.ModelViewSet):
         serializer = VideoSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
     
+    @action(detail=False, methods=['get'])
+    def videos_yesterday(self, request):
+        today = datetime.now().date()
+        yesterday = today - timedelta(days=1)
+        day_before_yesterday = yesterday - timedelta(days=1)
+    
+        queryset = Video.objects.filter(created_at__gte=day_before_yesterday, created_at__lt=yesterday)
+        serializer = VideoSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    
+    @action(detail=False, methods=['get'])
     def popular_videos(request):
     # Videos mit der Anzahl der Likes annotieren
         videos_with_like_count = Video.objects.annotate(likes_count=Count('likes')).order_by('-likes_count')
 
-    # Optional: Limitieren Sie die Anzahl der zurückgegebenen Videos
+    #Limitierung der Videos
         videos_with_like_count = videos_with_like_count[:10]  # Top 10 Videos
 
         context = {
