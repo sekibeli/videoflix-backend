@@ -4,10 +4,10 @@ from user.models import CustomUser
 from .models import Video
 
 class VideoSerializer(serializers.ModelSerializer):
-    likes = serializers.SerializerMethodField()
+    # likes = serializers.SerializerMethodField()
 
-    def get_likes(self, obj):
-        return obj.likes.values_list('id', flat=True)
+    # def get_likes(self, obj):
+    #     return obj.likes.values_list('id', flat=True)
     class Meta:
         model = Video
         fields = '__all__'

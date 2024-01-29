@@ -1,7 +1,7 @@
 import os
 from django.dispatch import receiver
 
-from videoflixbackend.tasks import convert_480p, convert_720p, convert_1080p
+from videoflixbackend.tasks import convert_480p, convert_720p, convert_1080p, create_thumbnail
 from .models import Video
 from django.db.models.signals import post_save, post_delete, pre_save
 import django_rq
@@ -12,10 +12,13 @@ def video_post_save(sender, instance, created, **kwargs):
     print('Video wurde gespeichert')
     if created:
         print('Neues Video erstellt', instance.video_file.path)
-        queue = django_rq.get_queue('default',autocommit=True)
-          
+        queue = django_rq.get_queue('default',autocommit=True)          
        
         base, _ = os.path.splitext(instance.video_file.path)
+
+        # Erstellung des Thumbnails  
+        thumbnail_output = base + '-thumbnail.jpg'
+        queue.enqueue(create_thumbnail, instance.video_file.path, thumbnail_output, instance.id)
               
         #Jobs zur KOnvertierung werden in die queue gestellt
         queue.enqueue(convert_480p, instance.video_file.path, base + '-480p.mp4')

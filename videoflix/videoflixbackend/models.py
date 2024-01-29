@@ -19,7 +19,8 @@ class Video(models.Model):
     description = models.CharField(max_length=500)
     category = models.CharField(max_length=20, choices=Category.choices, default=Category.allgemein)
     video_file = models.FileField(upload_to='videos', blank=True, null=True)
-    likes = models.ManyToManyField('user.CustomUser', related_name='likers')
+    likes = models.ManyToManyField('user.CustomUser', related_name='likers', blank=True)
+    thumbnail = models.ImageField(upload_to='videos/thumbnails/', null=True, blank=True)
     
     def __str__(self):
         return self.title
