@@ -44,7 +44,7 @@ def video_post_save(sender, instance, created, **kwargs):
         queue.enqueue(convert_1080p, instance.video_file.path, base + '-1080p.mp4')
        
          #Löschen des Cache
-        cache.delete('video_list_cache_key')
+    cache.delete('video_list_cache_key')
 
 
 
