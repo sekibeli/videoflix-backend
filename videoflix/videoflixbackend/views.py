@@ -101,3 +101,10 @@ class VideoViewSet(viewsets.ModelViewSet):
 
         # Senden der serialisierten Daten als Response
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'])
+    def increment_view_count(self, request, pk=None):
+        video = self.get_object() 
+        video.view_count += 1 
+        video.save() 
+        return Response({'status': 'view count incremented'}) 
