@@ -102,6 +102,13 @@ class VideoViewSet(viewsets.ModelViewSet):
         # Senden der serialisierten Daten als Response
         return Response(serializer.data)
     
+    @action(detail=False, methods=['get'])
+    def mostSeen_videos(self, request):
+        print("mostSeen_videos wurde aufgerufen.")
+        videos_seen = Video.objects.annotate(views_count=Count('view_count')).order_by('-view_count')[:10]
+        serializer = VideoSerializer(videos_seen, many=True, context={'request': request})
+        return Response(serializer.data)
+    
     @action(detail=True, methods=['post'])
     def increment_view_count(self, request, pk=None):
         video = self.get_object() 
