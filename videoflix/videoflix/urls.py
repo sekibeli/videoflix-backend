@@ -52,6 +52,7 @@ urlpatterns = [
     path('toggle_like/<int:videoId>', ToggleLike.as_view(), name='toggle-like'),
     path('popular-videos/', VideoViewSet.as_view({'get': 'popular_videos'}), name='popular_videos'),
     path('mostSeen-videos/', VideoViewSet.as_view({'get': 'mostSeen_videos'}), name='mostSeen_videos'),
+    path('recentVideos/', VideoViewSet.as_view({'get': 'recentVideos'}), name='recentVideos'),
     path('videos/<int:pk>/increment-view-count/', VideoViewSet.as_view({'post': 'increment_view_count'}), name='increment_view_count'),
 
     path('__debug__/', include('debug_toolbar.urls')),

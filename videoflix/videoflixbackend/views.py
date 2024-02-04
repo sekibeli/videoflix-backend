@@ -84,9 +84,18 @@ class VideoViewSet(viewsets.ModelViewSet):
     def videos_yesterday(self, request):
         today = datetime.now().date()
         yesterday = today - timedelta(days=1)
-        day_before_yesterday = yesterday - timedelta(days=1)
+       
     
-        queryset = Video.objects.filter(created_at__gte=day_before_yesterday, created_at__lt=yesterday)
+        queryset = Video.objects.filter(created_at__gte=yesterday, created_at__lt=today)
+        serializer = VideoSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def recentVideos(self, request):
+        today = datetime.now().date()
+        tomorrow = today + timedelta(days=1) 
+        three_days_ago = today - timedelta(days=3)
+        queryset = Video.objects.filter(created_at__gte=three_days_ago, created_at__lt=tomorrow)
         serializer = VideoSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
     
