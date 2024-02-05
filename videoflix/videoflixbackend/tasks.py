@@ -19,6 +19,7 @@ def create_thumbnail(source, output, video_id):
 
     video = Video.objects.get(id=video_id)
     video.thumbnail = 'videos/thumbnails/' + thumbnail_filename
+    print(f"video.thumbnail : {video.thumbnail}")
     video.save()
 
 

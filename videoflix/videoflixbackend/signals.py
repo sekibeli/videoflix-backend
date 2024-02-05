@@ -17,8 +17,9 @@ def video_post_save(sender, instance, created, **kwargs):
         base, _ = os.path.splitext(instance.video_file.path)
 
         # Erstellung des Thumbnails  
-        thumbnail_output = base + '-thumbnail.jpg'
-        queue.enqueue(create_thumbnail, instance.video_file.path, thumbnail_output, instance.id)
+        # thumbnail_output = base + '-thumbnail.jpg'
+        # print(f"thumbnail_output : {thumbnail_output}")
+        # queue.enqueue(create_thumbnail, instance.video_file.path, thumbnail_output, instance.id)
               
         #Jobs zur KOnvertierung werden in die queue gestellt
         queue.enqueue(convert_480p, instance.video_file.path, base + '-480p.mp4')
