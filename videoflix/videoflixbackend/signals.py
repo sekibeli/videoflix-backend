@@ -1,28 +1,13 @@
 import os
-import subprocess
+from django.conf import settings
+
 from django.dispatch import receiver
 
-from videoflixbackend.tasks import convert_480p, convert_720p, convert_1080p
+from videoflixbackend.tasks import convert_480p, convert_720p, convert_1080p, create_thumbnail
 from .models import Video
 from django.db.models.signals import post_save, post_delete, pre_save
 import django_rq
 from django.core.cache import cache
-
-
-def create_thumbnail(source, output):
-    print('Thumbnail-Erstellung wird ausgeführt')
-
-    # FFMPEG-Befehl zum Erstellen eines Thumbnails
-    cmd = [
-        'ffmpeg',
-        '-i', source,
-        '-ss', '00:00:01',  # Position im Video für das Thumbnail
-        '-vframes', '1',    # Nur ein Frame
-        '-s', '1280x720',   # Größe des Thumbnails
-        output
-    ]
-    subprocess.run(cmd, capture_output=True)
-
 
 
 @receiver(post_save, sender =Video)
@@ -36,7 +21,7 @@ def video_post_save(sender, instance, created, **kwargs):
 
         # Fügen Sie den Thumbnail-Erstellungsjob zur Queue hinzu
         thumbnail_output = base + '-thumbnail.jpg'
-        queue.enqueue(create_thumbnail, instance.video_file.path, thumbnail_output)
+        queue.enqueue(create_thumbnail, instance.video_file.path, thumbnail_output, instance.id)
               
         #Jobs zur KOnvertierung werden in die queue gestellt
         queue.enqueue(convert_480p, instance.video_file.path, base + '-480p.mp4')
@@ -44,7 +29,8 @@ def video_post_save(sender, instance, created, **kwargs):
         queue.enqueue(convert_1080p, instance.video_file.path, base + '-1080p.mp4')
        
          #Löschen des Cache
-    cache.delete('video_list_cache_key')
+        cache.delete('video_list_cache_key')
+
 
 
 
