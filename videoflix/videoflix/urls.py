@@ -19,6 +19,7 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 from rest_framework import routers
 
 from user.views import (
@@ -31,6 +32,10 @@ from user.views import (
     ToggleLike,
     UserViewSet
 )
+
+from videoflixbackend.views import VideoViewSet
+
+
 # router = routers.DefaultRouter()
 # router.register(r'user', UserViewSet, basename='user')
 
@@ -45,6 +50,9 @@ urlpatterns = [
     path('edit-user/', LoggeduserView.as_view(), name='edit-user'),
     path('delete-user/', DeleteUserView.as_view(), name='delete-user'),
     path('toggle_like/<int:videoId>', ToggleLike.as_view(), name='toggle-like'),
+    path('popular-videos/', VideoViewSet.as_view({'get': 'popular_videos'}), name='popular_videos'),
+    path('mostSeen-videos/', VideoViewSet.as_view({'get': 'mostSeen_videos'}), name='mostSeen_videos'),
+    path('videos/<int:pk>/increment-view-count/', VideoViewSet.as_view({'post': 'increment_view_count'}), name='increment_view_count'),
 
     path('__debug__/', include('debug_toolbar.urls')),
     path('django_rq/', include('django_rq.urls')),  
