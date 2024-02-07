@@ -1,4 +1,5 @@
 import os
+from django.conf import settings
 from django.dispatch import receiver
 
 from videoflixbackend.tasks import convert_480p, convert_720p, convert_1080p, create_thumbnail
@@ -12,14 +13,17 @@ def video_post_save(sender, instance, created, **kwargs):
     print('Video wurde gespeichert')
     if created:
         print('Neues Video erstellt', instance.video_file.path)
-        queue = django_rq.get_queue('default',autocommit=True)          
-       
-        base, _ = os.path.splitext(instance.video_file.path)
 
-        # Erstellung des Thumbnails  
-        # thumbnail_output = base + '-thumbnail.jpg'
-        # print(f"thumbnail_output : {thumbnail_output}")
-        # queue.enqueue(create_thumbnail, instance.video_file.path, thumbnail_output, instance.id)
+        queue = django_rq.get_queue('default', autocommit=True)          
+        video_file_name = os.path.basename(instance.video_file.name)
+        base, _ = os.path.splitext(video_file_name)
+        
+        thumbnail_name = f'{base}-thumbnail.jpg'
+        thumbnail_output = os.path.join('videos', 'thumbnails', thumbnail_name)
+        thumbnail_full_path = os.path.join(settings.MEDIA_ROOT, thumbnail_output)
+        
+        queue.enqueue(create_thumbnail, instance.video_file.path, thumbnail_full_path, instance.id)
+
               
         #Jobs zur KOnvertierung werden in die queue gestellt
         queue.enqueue(convert_480p, instance.video_file.path, base + '-480p.mp4')

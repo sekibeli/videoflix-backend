@@ -1,10 +1,11 @@
 import subprocess
 import os
+
+from django.conf import settings
 from .models import Video
 
 
 def create_thumbnail(source, output, video_id):
-    print('Thumbnail-Erstellung wird ausgeführt')
 
     cmd = [
         'ffmpeg',
@@ -14,14 +15,14 @@ def create_thumbnail(source, output, video_id):
         '-s', '1280x720',
         output
     ]
+
     subprocess.run(cmd, capture_output=True)
-    thumbnail_filename = os.path.basename(output)
 
+    thumbnail_rel_path = os.path.relpath(output, settings.MEDIA_ROOT)
+    
     video = Video.objects.get(id=video_id)
-    video.thumbnail = 'videos/thumbnails/' + thumbnail_filename
-    print(f"video.thumbnail : {video.thumbnail}")
+    video.thumbnail = thumbnail_rel_path
     video.save()
-
 
 
 def convert_480p(source, output):
