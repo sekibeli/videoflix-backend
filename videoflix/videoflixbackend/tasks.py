@@ -25,7 +25,7 @@ def create_thumbnail(source, output, video_id):
 
     subprocess.run(cmd, capture_output=True)
 
-    thumbnail_rel_path = os.path.join('thumbnails', thumbnail_base_name).replace('\\', '/')
+    thumbnail_rel_path = os.path.join('thumbnails', thumbnail_base_name)
     video = Video.objects.get(id=video_id)
     video.thumbnail.name = thumbnail_rel_path
     video.save()

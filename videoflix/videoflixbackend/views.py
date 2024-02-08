@@ -18,6 +18,7 @@ from rest_framework.decorators import action
 from .serializers import VideoSerializer
 from .models import Video
 from datetime import datetime, timedelta
+import os
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
@@ -54,7 +55,7 @@ class VideoViewSet(viewsets.ModelViewSet):
             category = self.request.query_params.get('category', None)
             if category is not None:
                     queryset = queryset.filter(category=category)
-        return queryset      
+        return queryset
     
    
     def perform_create(self, serializer):
