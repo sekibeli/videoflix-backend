@@ -32,8 +32,6 @@ def video_post_save(sender, instance, created, **kwargs):
         cache.delete('video_list_cache_key')
 
 
-
-
 @receiver(post_delete, sender = Video)        
 def video_post_delete(sender, instance, **kwargs):
     if instance.video_file:
