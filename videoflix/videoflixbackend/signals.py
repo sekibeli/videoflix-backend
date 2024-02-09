@@ -29,7 +29,7 @@ def video_post_save(sender, instance, created, **kwargs):
         queue.enqueue(convert_1080p, instance.video_file.path, base + '-1080p.mp4')
        
          #Löschen des Cache
-        cache.delete('video_list_cache_key')
+    cache.delete('video_list_cache_key')
 
 
 @receiver(post_delete, sender = Video)        
@@ -43,7 +43,7 @@ def video_post_delete(sender, instance, **kwargs):
             os.remove( base + '-1080p.mp4')
             print ('Video wurde gelöscht')   
              #Löschen des Cache
-            cache.delete('video_list_cache_key')
+        cache.delete('video_list_cache_key')
 
 
 @receiver(pre_save, sender = Video)
