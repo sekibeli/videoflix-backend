@@ -1,10 +1,13 @@
 from django.conf import settings
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate
 from django.views.decorators.cache import cache_page
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
+from django.db.models import Count
+from django.core import serializers
 
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -15,6 +18,7 @@ from rest_framework.decorators import action
 from .serializers import VideoSerializer
 from .models import Video
 from datetime import datetime, timedelta
+import os
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
 
@@ -51,11 +55,12 @@ class VideoViewSet(viewsets.ModelViewSet):
             category = self.request.query_params.get('category', None)
             if category is not None:
                     queryset = queryset.filter(category=category)
-        return queryset      
+        return queryset
     
    
     def perform_create(self, serializer):
         serializer.save(created_from=self.request.user)
+        print(self.request.data) 
 
     def retrieve(self, request, *args, **kwargs):
          video = get_object_or_404(Video, pk=kwargs['pk'])
@@ -64,6 +69,7 @@ class VideoViewSet(viewsets.ModelViewSet):
  
     def perform_update(self, serializer):
         serializer.save(created_from=self.request.user)
+        
     
    
     
@@ -74,3 +80,39 @@ class VideoViewSet(viewsets.ModelViewSet):
         queryset = Video.objects.filter(created_at__gte=today, created_at__lt=tomorrow)
         serializer = VideoSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def videos_yesterday(self, request):
+        today = datetime.now().date()
+        yesterday = today - timedelta(days=1)
+        day_before_yesterday = yesterday - timedelta(days=1)
+    
+        queryset = Video.objects.filter(created_at__gte=day_before_yesterday, created_at__lt=yesterday)
+        serializer = VideoSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    
+    @action(detail=False, methods=['get'])
+    def popular_videos(self, request):
+   
+        videos_with_like_count = Video.objects.annotate(likes_count=Count('likes')).order_by('-likes_count')[:10]
+
+        # Verwenden des VideoSerializers zur Serialisierung der Video-Daten
+        serializer = VideoSerializer(videos_with_like_count, many=True, context={'request': request})
+
+        # Senden der serialisierten Daten als Response
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def mostSeen_videos(self, request):
+        print("mostSeen_videos wurde aufgerufen.")
+        videos_seen = Video.objects.annotate(views_count=Count('view_count')).order_by('-view_count')[:10]
+        serializer = VideoSerializer(videos_seen, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'])
+    def increment_view_count(self, request, pk=None):
+        video = self.get_object() 
+        video.view_count += 1 
+        video.save() 
+        return Response({'status': 'view count incremented'}) 

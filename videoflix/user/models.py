@@ -9,4 +9,4 @@ class CustomUser(AbstractUser):
     phone = models.CharField(max_length=20, default='')
     adress = models.CharField(max_length=150, default='')
     verification_token = models.UUIDField(default=uuid.uuid4, editable=False)
-    liked_videos = models.ManyToManyField('videoflixbackend.Video', related_name='liked_videos')
+    liked_videos = models.ManyToManyField('videoflixbackend.Video', related_name='liked_videos', blank=True)
