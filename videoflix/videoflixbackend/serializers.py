@@ -7,6 +7,8 @@ class VideoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Video
         fields = '__all__'
+        extra_kwargs = {'likes': {'required': False}}
+
 
     
 class CustomUserSerializer(serializers.ModelSerializer):

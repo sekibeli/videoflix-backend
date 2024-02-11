@@ -1,21 +1,27 @@
 import os
+from django.conf import settings
+
 from django.dispatch import receiver
 
-from videoflixbackend.tasks import convert_480p, convert_720p, convert_1080p
+from videoflixbackend.tasks import convert_480p, convert_720p, convert_1080p, create_thumbnail
 from .models import Video
 from django.db.models.signals import post_save, post_delete, pre_save
 import django_rq
 from django.core.cache import cache
+
 
 @receiver(post_save, sender =Video)
 def video_post_save(sender, instance, created, **kwargs):
     print('Video wurde gespeichert')
     if created:
         print('Neues Video erstellt', instance.video_file.path)
-        queue = django_rq.get_queue('default',autocommit=True)
-          
+        queue = django_rq.get_queue('default',autocommit=True)          
        
         base, _ = os.path.splitext(instance.video_file.path)
+
+        # Fügen Sie den Thumbnail-Erstellungsjob zur Queue hinzu
+        thumbnail_output = base + '-thumbnail.jpg'
+        queue.enqueue(create_thumbnail, instance.video_file.path, thumbnail_output, instance.id)
               
         #Jobs zur KOnvertierung werden in die queue gestellt
         queue.enqueue(convert_480p, instance.video_file.path, base + '-480p.mp4')
@@ -23,8 +29,7 @@ def video_post_save(sender, instance, created, **kwargs):
         queue.enqueue(convert_1080p, instance.video_file.path, base + '-1080p.mp4')
        
          #Löschen des Cache
-        cache.delete('video_list_cache_key')
-
+    cache.delete('video_list_cache_key')
 
 
 @receiver(post_delete, sender = Video)        
@@ -38,7 +43,7 @@ def video_post_delete(sender, instance, **kwargs):
             os.remove( base + '-1080p.mp4')
             print ('Video wurde gelöscht')   
              #Löschen des Cache
-            cache.delete('video_list_cache_key')
+        cache.delete('video_list_cache_key')
 
 
 @receiver(pre_save, sender = Video)
