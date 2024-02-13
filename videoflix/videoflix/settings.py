@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -35,7 +35,7 @@ ALLOWED_HOSTS = [
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:4200',
-    ]
+]
 
 IMPORT_EXPORT_USE_TRANSACTIONS = True
 
@@ -71,8 +71,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-   
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",   
 ]
 
 ROOT_URLCONF = "videoflix.urls"
@@ -80,7 +79,7 @@ ROOT_URLCONF = "videoflix.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / 'templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -116,7 +115,7 @@ CACHES = {
 RQ_QUEUES = {
     'default': {
         'HOST': 'localhost',
-        # 'PASSWORD':'foobared',
+        'PASSWORD':'foobared',
         'PORT': 6379,
         'DB': 0,
         'DEFAULT_TIMEOUT': 360,
@@ -137,6 +136,10 @@ RQ_QUEUES = {
 WSGI_APPLICATION = "videoflix.wsgi.application"
 
 
+# Database
+# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -145,8 +148,7 @@ DATABASES = {
         "USER": os.environ.get('databaseUser'),
         "PASSWORD": os.environ.get('databasePassword'),
         "HOST": "localhost",
-        "PORT": "5432",
-        
+        "PORT": "5432",        
     }
 }
 
@@ -173,7 +175,7 @@ DEFAULT_FROM_EMAIL = os.environ.get('emailUser')
 FRONTEND_URL = 'http://localhost:4200'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('emailHost')
+EMAIL_HOST = os.environ.get('emailHost') 
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('emailUser') 
@@ -201,3 +203,10 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+}

@@ -18,8 +18,26 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
+
+
 from rest_framework import routers
-from videoflixbackend.views import LoginView, SignupView, LoggeduserView, VerifyEmailView, VideoViewSet, ResetPasswordView
+
+from user.views import (
+    SignupView, 
+    VerifyEmailView,
+    LoginView,
+    LogoutView,
+    LoggeduserView,
+    DeleteUserView,
+    ToggleLike,
+    ResetPasswordView
+)
+
+from videoflixbackend.views import VideoViewSet
+
+
+# router = routers.DefaultRouter()
+# router.register(r'user', UserViewSet, basename='user')
 
 router = routers.DefaultRouter()
 
@@ -29,14 +47,20 @@ router.register(r'videos', VideoViewSet, basename='video')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('videoflixbackend.urls')),
-    path('login/', LoginView.as_view(), name='login'),
     path('signup/', SignupView.as_view(), name='signup'),
-    path('edit-user/', LoggeduserView.as_view(), name='edit-user'),
     path('verify/<str:token>/', VerifyEmailView.as_view(), name='verify-email'),
-    path('forgot-password/', include('django_rest_passwordreset.urls', namespace='forgot-password')),
-    path('reset-password/', ResetPasswordView.as_view(), name='reset-password'),
-    path('__debug__/', include('debug_toolbar.urls')),
+    path('login/', LoginView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
+    path('api/password_reset/', include('django_rest_passwordreset.urls')),
+    path('edit-user/', LoggeduserView.as_view(), name='edit-user'),
+    path('delete-user/', DeleteUserView.as_view(), name='delete-user'),
+    path('toggle_like/<int:videoId>', ToggleLike.as_view(), name='toggle-like'),
+    path('popular-videos/', VideoViewSet.as_view({'get': 'popular_videos'}), name='popular_videos'),
+    path('mostSeen-videos/', VideoViewSet.as_view({'get': 'mostSeen_videos'}), name='mostSeen_videos'),
+    path('recentVideos/', VideoViewSet.as_view({'get': 'recentVideos'}), name='recentVideos'),
+    path('videos/<int:pk>/increment-view-count/', VideoViewSet.as_view({'post': 'increment_view_count'}), name='increment_view_count'),
 
+    path('__debug__/', include('debug_toolbar.urls')),
     path('django_rq/', include('django_rq.urls')),  
 
 

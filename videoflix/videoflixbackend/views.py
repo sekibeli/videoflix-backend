@@ -1,151 +1,127 @@
 from django.conf import settings
-from django.shortcuts import render
-from rest_framework.views import APIView
+from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate
-from rest_framework.response import Response
-from rest_framework import status as http_status
-from rest_framework import status
-from rest_framework import viewsets
 from django.views.decorators.cache import cache_page
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
-from user.models import CustomUser
-from .serializers import VideoSerializer, CustomUserSerializer, ResetPasswordSerializer
-from rest_framework.permissions import IsAuthenticated
-from .models import Video
-from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token
-from django.core.mail import send_mail
-from rest_framework.response import Response
-from rest_framework.authentication import TokenAuthentication
-from django.contrib.auth import authenticate
-from django.contrib.auth.hashers import make_password
 from django.utils.decorators import method_decorator
+from django.core.cache import cache
+from django.db.models import Count
+from django.core import serializers
+
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
-from django.contrib.auth.tokens import default_token_generator
+from rest_framework.response import Response
+from rest_framework.decorators import action
+
+from .serializers import VideoSerializer
+from .models import Video
+from datetime import datetime, timedelta
+import os
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
-
-
-class SignupView(APIView):    
-    permission_classes = []
-    authentication_classes = []
-
-    def post(self, request):
-        serializer = CustomUserSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            if CustomUser.objects.filter(email=request.data["email"]).exists():
-                return Response({"error": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
-
-            user = CustomUser(
-                username=serializer.validated_data['username'],
-                email=serializer.validated_data['email'],
-                phone=serializer.validated_data.get('phone', ''),
-                # address=serializer.validated_data.get('address', ''),
-            )
-            user.set_password(serializer.validated_data['password'])  
-            user.save()
-
-            self.send_verification_email(user)
-
-            return Response({"user": CustomUserSerializer(user).data}, status=status.HTTP_201_CREATED)
-    
-
-    def send_verification_email(self, user):
-        subject = 'Please confirm your email'
-        message = f'Please use this link to verify your email: {settings.FRONTEND_URL}/verify/{user.verification_token}'
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
-
-
-class VerifyEmailView(APIView):
-    def get(self, request, token, format=None):
-        try:
-            user = CustomUser.objects.get(verification_token=token)
-            user.is_verified = True
-            user.save()
-            return Response({"message": "E-Mail successfully verified."}, status=status.HTTP_200_OK)
-        except CustomUser.DoesNotExist:
-            return Response({"error": "Invaild Token"}, status=status.HTTP_400_BAD_REQUEST)
-        
-
-class ResetPasswordView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = ResetPasswordSerializer(data=request.data)
-        if serializer.is_valid():
-            data = serializer.validated_data
-            try:
-                user = User.objects.get(email=data['email'])
-                if default_token_generator.check_token(user, data['token']):
-                    user.set_password(data['password'])
-                    user.save()
-                    return Response({'message': 'Successfully reset password.'})
-                return Response({'error': 'Invalid Token.'}, status=status.HTTP_400_BAD_REQUEST)
-            except User.DoesNotExist:
-                return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        
-class LoginView(APIView):
-    permission_classes = []
-    authentication_classes = []
-
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        user = authenticate(username=username, password=password)
-
-        if user is not None:
-            if not user.is_verified:
-                return Response({"error": "Please verify your email first."}, status=status.HTTP_401_UNAUTHORIZED)
-
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({"token": token.key}, status=status.HTTP_200_OK)
-
-        return Response({"error": "Invalid login data"}, status=status.HTTP_401_UNAUTHORIZED)             
-    
-
-class LogoutView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        request.user.auth_token.delete()
-        return Response(status=status.HTTP_200_OK)   
-      
-
-class LoggeduserView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        serializer = CustomUserSerializer(request.user)
-        return Response(serializer.data)   
-    
-    def patch(self, request):
-        serializer = CustomUserSerializer(request.user, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class VideoViewSet(viewsets.ModelViewSet):
     
     serializer_class = VideoSerializer
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser)
    
    
     # @method_decorator(cache_page(CACHE_TTL))
-    def list(self, request, *args, **kwargs):
-        return super(VideoViewSet, self).list(request, *args, **kwargs)
+    # def list(self, request, *args, **kwargs):
+    #     return super(VideoViewSet, self).list(request, *args, **kwargs)
  
+    def list(self, request, *args, **kwargs):
+        cache_key = 'video_list_cache_key'
+        video_list = cache.get(cache_key)
+
+        if not video_list:
+            response = super(VideoViewSet, self).list(request, *args, **kwargs)
+            video_list = response.data
+            cache.set(cache_key, video_list, timeout=CACHE_TTL)
+
+        return Response(video_list)
+    
+    
   #  @cache_page(CACHE_TTL)
     def get_queryset(self):
-        # current_user = self.request.user #eingloggten user holen
-        # if current_user.is_authenticated:
-        queryset = Video.objects.all()
-        category = self.request.query_params.get('category', None)
-        if category is not None:
-            queryset = queryset.filter(category=category)
-        return queryset          
+        current_user = self.request.user #eingloggten user holen
+        if current_user.is_authenticated:
+            queryset = Video.objects.all()
+                    
+            category = self.request.query_params.get('category', None)
+            if category is not None:
+                    queryset = queryset.filter(category=category)
+        return queryset
+    
+   
+    def perform_create(self, serializer):
+        serializer.save(created_from=self.request.user)
+        print(self.request.data) 
+
+    def retrieve(self, request, *args, **kwargs):
+         video = get_object_or_404(Video, pk=kwargs['pk'])
+         serializer = VideoSerializer(video, context={'request': request})
+         return Response(serializer.data)
  
+    def perform_update(self, serializer):
+        serializer.save(created_from=self.request.user)
+        
+    
+   
+    
+    @action(detail=False, methods=['get'])
+    def videos_today(self, request):
+        today = datetime.now().date()
+        tomorrow = today + timedelta(days=1)
+        queryset = Video.objects.filter(created_at__gte=today, created_at__lt=tomorrow)
+        serializer = VideoSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def videos_yesterday(self, request):
+        today = datetime.now().date()
+        yesterday = today - timedelta(days=1)
+       
+    
+        queryset = Video.objects.filter(created_at__gte=yesterday, created_at__lt=today)
+        serializer = VideoSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def recentVideos(self, request):
+        today = datetime.now().date()
+        tomorrow = today + timedelta(days=1) 
+        three_days_ago = today - timedelta(days=3)
+        queryset = Video.objects.filter(created_at__gte=three_days_ago, created_at__lt=tomorrow)
+        serializer = VideoSerializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    
+    @action(detail=False, methods=['get'])
+    def popular_videos(self, request):
+   
+        videos_with_like_count = Video.objects.annotate(likes_count=Count('likes')).order_by('-likes_count')[:10]
+
+        # Verwenden des VideoSerializers zur Serialisierung der Video-Daten
+        serializer = VideoSerializer(videos_with_like_count, many=True, context={'request': request})
+
+        # Senden der serialisierten Daten als Response
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def mostSeen_videos(self, request):
+        print("mostSeen_videos wurde aufgerufen.")
+        videos_seen = Video.objects.annotate(views_count=Count('view_count')).order_by('-view_count')[:10]
+        serializer = VideoSerializer(videos_seen, many=True, context={'request': request})
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'])
+    def increment_view_count(self, request, pk=None):
+        video = self.get_object() 
+        video.view_count += 1 
+        video.save() 
+        return Response({'status': 'view count incremented'}) 

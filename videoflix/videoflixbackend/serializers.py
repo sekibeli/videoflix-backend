@@ -7,19 +7,16 @@ class VideoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Video
         fields = '__all__'
+        extra_kwargs = {'likes': {'required': False}}
+
 
     
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'password', 'is_verified', 'phone', 'adress']
+        fields = ['id', 'username', 'email', 'password', 'is_verified', 'phone']
 
         extra_kwargs = {
+            'password': {'write_only': True},
             'is_verified': {'read_only': True},
         }
-
-
-class ResetPasswordSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    token = serializers.CharField()
-    password = serializers.CharField()

@@ -1,4 +1,7 @@
 /env
+.env
+/media
+/videoflix/media
 db.postgresql
 videoflix/media/videos
 # Created by https://www.gitignore.io
