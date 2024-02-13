@@ -30,7 +30,7 @@ from user.views import (
     LoggeduserView,
     DeleteUserView,
     ToggleLike,
-    UserViewSet
+    ResetPasswordView
 )
 
 from videoflixbackend.views import VideoViewSet
@@ -38,6 +38,10 @@ from videoflixbackend.views import VideoViewSet
 
 # router = routers.DefaultRouter()
 # router.register(r'user', UserViewSet, basename='user')
+
+router = routers.DefaultRouter()
+
+router.register(r'videos', VideoViewSet, basename='video')
 
 
 urlpatterns = [
@@ -47,6 +51,7 @@ urlpatterns = [
     path('verify/<str:token>/', VerifyEmailView.as_view(), name='verify-email'),
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
+    path('api/password_reset/', include('django_rest_passwordreset.urls')),
     path('edit-user/', LoggeduserView.as_view(), name='edit-user'),
     path('delete-user/', DeleteUserView.as_view(), name='delete-user'),
     path('toggle_like/<int:videoId>', ToggleLike.as_view(), name='toggle-like'),
