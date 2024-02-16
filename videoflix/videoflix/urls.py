@@ -29,11 +29,10 @@ from user.views import (
     LogoutView,
     LoggeduserView,
     DeleteUserView,
-    ToggleLike,
-    ResetPasswordView
+    ToggleLike
 )
 
-from videoflixbackend.views import VideoViewSet
+from videoflixbackend.views import VideoViewSet, VideoSearchView
 
 
 # router = routers.DefaultRouter()
@@ -47,6 +46,7 @@ router.register(r'videos', VideoViewSet, basename='video')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('videoflixbackend.urls')),
+    path('videos-search/', VideoSearchView.as_view(), name='videos-search'),
     path('signup/', SignupView.as_view(), name='signup'),
     path('verify/<str:token>/', VerifyEmailView.as_view(), name='verify-email'),
     path('login/', LoginView.as_view(), name='login'),
