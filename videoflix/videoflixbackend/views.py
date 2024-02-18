@@ -36,7 +36,9 @@ class VideoSearchView(APIView):
             )
         else:
             videos = Video.objects.all()
-        serializer = VideoSerializer(videos, many=True)
+        
+        # Passen Sie den Kontext beim Erstellen des Serializers an
+        serializer = VideoSerializer(videos, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
