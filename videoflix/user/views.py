@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import authenticate
+from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import get_object_or_404
@@ -15,6 +16,7 @@ from rest_framework import viewsets
 from user.models import CustomUser
 from videoflixbackend.serializers import CustomUserSerializer
 from videoflixbackend.models import Video
+from .serializers import ResetPasswordSerializer
 
 from django.core.cache import cache
 
@@ -160,3 +162,18 @@ class ToggleLike(APIView):
 
         return Response({'liked': liked}, status=status.HTTP_200_OK)
 
+class ResetPasswordView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            try:
+                user = CustomUser.objects.get(email=data['email'])
+                if default_token_generator.check_token(user, data['token']):
+                    user.set_password(data['password'])
+                    user.save()
+                    return Response({'message': 'Successfully reset password.'})
+                return Response({'error': 'Invalid Token.'}, status=status.HTTP_400_BAD_REQUEST)
+            except CustomUser.DoesNotExist:
+                return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

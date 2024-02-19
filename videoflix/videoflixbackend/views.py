@@ -6,21 +6,40 @@ from django.views.decorators.cache import cache_page
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.core import serializers
 
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.views import APIView
 
 from .serializers import VideoSerializer
 from .models import Video
 from datetime import datetime, timedelta
 import os
 
+from django.contrib.postgres.search import SearchVector
+
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
+
+
+
+class VideoSearchView(APIView):
+    def get(self, request, *args, **kwargs):
+        search = request.query_params.get('search', None)
+        if search is not None:
+            videos = Video.objects.filter(
+                Q(title__icontains=search) | Q(description__icontains=search)
+            )
+        else:
+            videos = Video.objects.all()
+        
+        # Passen Sie den Kontext beim Erstellen des Serializers an
+        serializer = VideoSerializer(videos, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class VideoViewSet(viewsets.ModelViewSet):
@@ -28,13 +47,7 @@ class VideoViewSet(viewsets.ModelViewSet):
     serializer_class = VideoSerializer
     permission_classes = [IsAuthenticated]
     parser_classes = (MultiPartParser, FormParser)
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['title', 'description', 'category']
-   
-   
-    # @method_decorator(cache_page(CACHE_TTL))
-    # def list(self, request, *args, **kwargs):
-    #     return super(VideoViewSet, self).list(request, *args, **kwargs)
+
  
     def list(self, request, *args, **kwargs):
         cache_key = 'video_list_cache_key'
@@ -53,7 +66,6 @@ class VideoViewSet(viewsets.ModelViewSet):
         current_user = self.request.user #eingloggten user holen
         if current_user.is_authenticated:
             queryset = Video.objects.all()
-                    
             category = self.request.query_params.get('category', None)
             if category is not None:
                     queryset = queryset.filter(category=category)
@@ -79,7 +91,7 @@ class VideoViewSet(viewsets.ModelViewSet):
     def videos_today(self, request):
         today = datetime.now().date()
         tomorrow = today + timedelta(days=1)
-        queryset = Video.objects.filter(created_at__gte=today, created_at__lt=tomorrow)
+        queryset = Video.objects.filter(created_at__gte=today, created_at__lt=tomorrow)            
         serializer = VideoSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
     
