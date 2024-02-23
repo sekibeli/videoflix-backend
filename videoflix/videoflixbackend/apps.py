@@ -7,4 +7,12 @@ class VideoflixbackendConfig(AppConfig):
 
 
     def ready(self):
-        from . import signals;
+        from django.utils import timezone
+        from django_rq import get_scheduler
+        from .tasks import delete_inactive_guest_users
+        scheduler = get_scheduler('default')
+        scheduler.schedule(
+            scheduled_time=timezone.now(), 
+            func='videoflixbackend.tasks.delete_inactive_guest_users',
+            interval=86400, 
+        )

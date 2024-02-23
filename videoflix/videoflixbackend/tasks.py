@@ -2,7 +2,12 @@ import subprocess
 import os
 
 from django.conf import settings
+
+from user.models import CustomUser
 from .models import Video
+
+from django.utils import timezone
+from datetime import timedelta
 
 
 def create_thumbnail(source, output, video_id):
@@ -78,3 +83,15 @@ def convert_1080p(source, output):
         output
     ]
         run = subprocess.run(cmd, capture_output=True)
+
+
+def delete_inactive_guest_users():
+    time_threshold = timezone.now() - timedelta(hours=24)
+    inactive_guests = CustomUser.objects.filter(updated_at__lt=time_threshold, is_guest=True)
+
+    for guest in inactive_guests:
+        Video.objects.filter(created_from=guest).delete()
+    count = inactive_guests.count()
+    inactive_guests.delete()
+    print(f"Deleted {count} inactive guest users.")
+
