@@ -37,7 +37,7 @@ def video_post_save(sender, instance, created, **kwargs):
         queue.enqueue(convert_1080p, instance.video_file.path, base + '-1080p.mp4')
        
          #Löschen des Cache
-    cache.clear()
+    cache.delete('video_list_cache_key')
 
 
 @receiver(post_delete, sender = Video)        
@@ -73,6 +73,7 @@ def video_pre_delete_on_change(sender, instance, **kwargs):
     if not old_file == new_file:
         if os.path.isfile(old_file.path):
             os.remove(old_file.path)
+
 
 @receiver(reset_password_token_created)
 def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
