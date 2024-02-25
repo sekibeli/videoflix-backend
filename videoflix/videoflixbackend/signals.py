@@ -10,6 +10,14 @@ import django_rq
 from django.core.cache import cache
 
 
+# These imports sare for the passwort reset logic from DRF 
+from django.core.mail import EmailMultiAlternatives
+from django.dispatch import receiver
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django_rest_passwordreset.signals import reset_password_token_created
+
+
 @receiver(post_save, sender =Video)
 def video_post_save(sender, instance, created, **kwargs):
     print('Video wurde gespeichert')
@@ -29,7 +37,7 @@ def video_post_save(sender, instance, created, **kwargs):
         queue.enqueue(convert_1080p, instance.video_file.path, base + '-1080p.mp4')
        
          #Löschen des Cache
-        cache.clear()
+    cache.clear()
 
 
 @receiver(post_delete, sender = Video)        
@@ -43,7 +51,7 @@ def video_post_delete(sender, instance, **kwargs):
             os.remove( base + '-1080p.mp4')
             print ('Video wurde gelöscht')   
              #Löschen des Cache
-            cache.delete('video_list_cache_key')
+        cache.delete('video_list_cache_key')
 
 
 @receiver(pre_save, sender = Video)
@@ -65,4 +73,26 @@ def video_pre_delete_on_change(sender, instance, **kwargs):
     if not old_file == new_file:
         if os.path.isfile(old_file.path):
             os.remove(old_file.path)
+
+@receiver(reset_password_token_created)
+def password_reset_token_created(sender, instance, reset_password_token, *args, **kwargs):
+    reset_password_url = f"{settings.FRONTEND_URL}/reset-password?token={reset_password_token.key}"
+
+    context = {
+        'current_user': reset_password_token.user,
+        'username': reset_password_token.user.username,
+        'email': reset_password_token.user.email,
+        'reset_password_url': reset_password_url
+    }
+
+    email_html_message = render_to_string('user_reset_password.html', context)
+    email_plaintext_message = render_to_string('user_reset_password.txt', context)
          
+    msg = EmailMultiAlternatives(
+        "Password Reset for {title}".format(title="Password Reset for Videoflix"),
+        email_plaintext_message,
+        "Alcazar85@gmx.de",
+        [reset_password_token.user.email]
+    )
+    msg.attach_alternative(email_html_message, "text/html")
+    msg.send()
