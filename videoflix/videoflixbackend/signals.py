@@ -1,5 +1,7 @@
-import os
 from django.conf import settings
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 from django.dispatch import receiver
 
@@ -88,6 +90,7 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
 
     email_html_message = render_to_string('user_reset_password.html', context)
     email_plaintext_message = render_to_string('user_reset_password.txt', context)
+    # EMAIL_HOST_USER = os.environ.get('emailUser') 
          
     msg = EmailMultiAlternatives(
         "Password Reset for {title}".format(title="Password Reset for Videoflix"),

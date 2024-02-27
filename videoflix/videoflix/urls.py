@@ -47,13 +47,13 @@ router.register(r'videos', VideoViewSet, basename='video')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('videoflixbackend.urls')),
+    path('api/password_reset/', include('django_rest_passwordreset.urls')),
     path('videos-search/', VideoSearchView.as_view(), name='videos-search'),
     path('signup/', SignupView.as_view(), name='signup'),
     path('verify/<str:token>/', VerifyEmailView.as_view(), name='verify-email'),
     path('login/', LoginView.as_view(), name='login'),
     path('guest-login/', GuestLoginView.as_view(), name='guest-login'),
     path('logout/', LogoutView.as_view(), name='logout'),
-    path('api/password_reset/', include('django_rest_passwordreset.urls')),
     path('edit-user/', LoggeduserView.as_view(), name='edit-user'),
     path('delete-user/', DeleteUserView.as_view(), name='delete-user'),
     path('toggle_like/<int:videoId>', ToggleLike.as_view(), name='toggle-like'),
@@ -61,9 +61,6 @@ urlpatterns = [
     path('mostSeen-videos/', VideoViewSet.as_view({'get': 'mostSeen_videos'}), name='mostSeen_videos'),
     path('recentVideos/', VideoViewSet.as_view({'get': 'recentVideos'}), name='recentVideos'),
     path('videos/<int:pk>/increment-view-count/', VideoViewSet.as_view({'post': 'increment_view_count'}), name='increment_view_count'),
-
     path('__debug__/', include('debug_toolbar.urls')),
     path('django_rq/', include('django_rq.urls')),  
-
-
 ]  + static(settings.MEDIA_URL , document_root = settings.MEDIA_ROOT)
