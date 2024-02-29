@@ -6,5 +6,3 @@ class VideoflixbackendConfig(AppConfig):
     name = 'videoflixbackend'
 
 
-    def ready(self):
-        from . import signals;
