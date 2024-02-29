@@ -9,6 +9,7 @@ from django.contrib.auth.admin import UserAdmin
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
     add_form = CustomUserCreationForm
+    readonly_fields = ('created_at',) 
     fieldsets = (
         
         (
@@ -21,6 +22,8 @@ class CustomUserAdmin(admin.ModelAdmin):
                     'email',
                     'is_verified',
                     'password',
+                    'password',
+                    'created_at',
                     'is_guest'
                 )
             }
