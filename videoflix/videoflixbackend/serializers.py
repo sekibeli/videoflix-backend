@@ -20,15 +20,28 @@ class VideoSerializer(serializers.ModelSerializer):
     
 
 class VideoQualitySerializer(serializers.ModelSerializer):
+    video_file_url = serializers.SerializerMethodField('get_video_file_url')
+
     class Meta:
         model = VideoQuality
-        fields = ('quality', 'video_file')
+        fields = ('quality', 'video_file', 'video_file_url')
+
+    def get_video_file_url(self, obj):
+        request = self.context.get('request')
+        video_file_url = obj.video_file.url if hasattr(obj.video_file, 'url') else ''
+        print("Request:", request)  # Debug-Ausgabe
+        print("URL vor build_absolute_uri:", video_file_url)  # Debug-Ausgabe
+        if request is not None:
+            full_url = request.build_absolute_uri(video_file_url)
+            print("Vollständige URL:", full_url)  # Debug-Ausgabe
+            return full_url
+        return video_file_url
 
     
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'password', 'is_verified', 'phone']
+        fields = ['id', 'username', 'email', 'password', 'is_verified']
 
         extra_kwargs = {
             'password': {'write_only': True},

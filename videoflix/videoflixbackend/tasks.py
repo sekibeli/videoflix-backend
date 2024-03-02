@@ -2,7 +2,12 @@ import subprocess
 import os
 
 from django.conf import settings
+
+from user.models import CustomUser
 from .models import Video, VideoQuality
+
+from django.utils import timezone
+from datetime import timedelta
 
 
 def create_thumbnail(source, output, video_id):
@@ -45,7 +50,7 @@ def convert_and_save_quality(video, base_path, quality_label, resolution):
     ]
     subprocess.run(cmd, capture_output=True)
     
-    relative_path = output.replace(settings.MEDIA_ROOT + '/', '', 1)
+    relative_path = os.path.relpath(output, settings.MEDIA_ROOT)
     VideoQuality.objects.create(
         video=video,
         quality=quality_label,

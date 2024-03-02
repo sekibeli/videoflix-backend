@@ -81,15 +81,10 @@ class VideoViewSet(viewsets.ModelViewSet):
         video = get_object_or_404(Video, pk=kwargs['pk'])
         qualities = VideoQuality.objects.filter(video=video)
         video_data = VideoSerializer(video, context={'request': request}).data
-        quality_data = VideoQualitySerializer(qualities, many=True).data
+        quality_data = VideoQualitySerializer(qualities, many=True, context={'request': request}).data
         video_data['qualities'] = quality_data
         return Response(video_data)
 
-
-    # def retrieve(self, request, *args, **kwargs):
-    #      video = get_object_or_404(Video, pk=kwargs['pk'])
-    #      serializer = VideoSerializer(video, context={'request': request})
-    #      return Response(serializer.data)
  
     def perform_update(self, serializer):
         serializer.save(created_from=self.request.user)
