@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.conf import settings
 from user.models import CustomUser
-from .models import Video
+from .models import Video, VideoQuality
 
 class VideoSerializer(serializers.ModelSerializer):
     video_url = serializers.SerializerMethodField('get_video_url')
@@ -13,9 +13,16 @@ class VideoSerializer(serializers.ModelSerializer):
 
     def get_video_url(self, obj):
         request = self.context.get('request')
+        video_url = obj.video_file.url if obj.video_file else ''
         if request is not None:
-            return request.build_absolute_uri(obj.video_file.url) 
-        return obj.file.url  
+            return request.build_absolute_uri(video_url)
+        return video_url 
+    
+
+class VideoQualitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VideoQuality
+        fields = ('quality', 'video_file')
 
     
 class CustomUserSerializer(serializers.ModelSerializer):

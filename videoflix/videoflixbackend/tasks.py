@@ -2,7 +2,7 @@ import subprocess
 import os
 
 from django.conf import settings
-from .models import Video
+from .models import Video, VideoQuality
 
 
 def create_thumbnail(source, output, video_id):
@@ -31,50 +31,95 @@ def create_thumbnail(source, output, video_id):
     video.save()
 
 
-def convert_480p(source, output):
-    print('hey convert_480p wird ausgeführt')
-
+def convert_and_save_quality(video, base_path, quality_label, resolution):
+    output = f'{base_path}-{quality_label}.mp4'
     cmd = [
         'ffmpeg',
-        '-i', source,
-        '-s', 'hd480',
+        '-i', video.video_file.path,
+        '-s', resolution,
         '-c:v', 'libx264',
         '-crf', '23',
         '-c:a', 'aac',
         '-strict', '-2',
         output
     ]
-    run = subprocess.run(cmd, capture_output=True)
+    subprocess.run(cmd, capture_output=True)
+    
+    relative_path = output.replace(settings.MEDIA_ROOT + '/', '', 1)
+    VideoQuality.objects.create(
+        video=video,
+        quality=quality_label,
+        video_file=relative_path
+    )
+
+
+
+# def convert_480p(source, output):
+#     print('hey convert_480p wird ausgeführt')
+
+#     cmd = [
+#         'ffmpeg',
+#         '-i', source,
+#         '-s', 'hd480',
+#         '-c:v', 'libx264',
+#         '-crf', '23',
+#         '-c:a', 'aac',
+#         '-strict', '-2',
+#         output
+#     ]
+#     run = subprocess.run(cmd, capture_output=True)
+#     if run.returncode == 0:  # Nur wenn ffmpeg erfolgreich war
+#         video_quality = VideoQuality.objects.create(
+#             video=Video.objects.get(video_file=source),
+#             quality='480p',
+#             video_file=output.replace(settings.MEDIA_ROOT, '')  # Speichere relativen Pfad
+#         )
+#         video_quality.save()
+
   
     
     
     
 
-def convert_720p(source, output):
+# def convert_720p(source, output):
            
-        cmd = [
-        'ffmpeg',
-        '-i', source,
-        '-s', 'hd720',
-        '-c:v', 'libx264',
-        '-crf', '23',
-        '-c:a', 'aac',
-        '-strict', '-2',
-        output
-    ]
-        run = subprocess.run(cmd, capture_output=True)
+#         cmd = [
+#         'ffmpeg',
+#         '-i', source,
+#         '-s', 'hd720',
+#         '-c:v', 'libx264',
+#         '-crf', '23',
+#         '-c:a', 'aac',
+#         '-strict', '-2',
+#         output
+#     ]
+#         run = subprocess.run(cmd, capture_output=True)
+#         if run.returncode == 0:  # Nur wenn ffmpeg erfolgreich war
+#             video_quality = VideoQuality.objects.create(
+#                 video=Video.objects.get(video_file=source),
+#                 quality='720p',
+#                 video_file=output.replace(settings.MEDIA_ROOT, '')  # Speichere relativen Pfad
+#             )
+#             video_quality.save()
 
 
-def convert_1080p(source, output):
+# def convert_1080p(source, output):
            
-        cmd = [
-        'ffmpeg',
-        '-i', source,
-        '-s', 'hd1080',
-        '-c:v', 'libx264',
-        '-crf', '23',
-        '-c:a', 'aac',
-        '-strict', '-2',
-        output
-    ]
-        run = subprocess.run(cmd, capture_output=True)
+#         cmd = [
+#         'ffmpeg',
+#         '-i', source,
+#         '-s', 'hd1080',
+#         '-c:v', 'libx264',
+#         '-crf', '23',
+#         '-c:a', 'aac',
+#         '-strict', '-2',
+#         output
+#     ]
+#         run = subprocess.run(cmd, capture_output=True)
+#         if run.returncode == 0:  # Nur wenn ffmpeg erfolgreich war
+#             video_quality = VideoQuality.objects.create(
+#                 video=Video.objects.get(video_file=source),
+#                 quality='1080p',
+#                 video_file=output.replace(settings.MEDIA_ROOT, '')  # Speichere relativen Pfad
+#             )
+#             video_quality.save()
