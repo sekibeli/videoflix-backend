@@ -1,19 +1,19 @@
 from django.contrib import admin
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
-from .models import Video
+from .models import Video, VideoQuality
 
 # Register your models here.
 
 
 
-class VideoResource(resources.ModelResource):
+class VideoQualityInline(admin.TabularInline):
+    model = VideoQuality
+    extra = 1  # Wie viele leere Felder standardmäßig angezeigt werden sollen
 
-    class Meta:
-        model = Video
-    
-    
-class VideoAdmin(ImportExportModelAdmin):
-    pass
+class VideoAdmin(admin.ModelAdmin):
+    inlines = [
+        VideoQualityInline,
+    ]
 
 admin.site.register(Video, VideoAdmin)

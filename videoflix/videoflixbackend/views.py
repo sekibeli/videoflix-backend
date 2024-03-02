@@ -16,8 +16,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.views import APIView
 
-from .serializers import VideoSerializer
-from .models import Video
+from .serializers import VideoSerializer, VideoQualitySerializer
+from .models import Video, VideoQuality
 from datetime import datetime, timedelta
 import os
 
@@ -76,10 +76,15 @@ class VideoViewSet(viewsets.ModelViewSet):
         serializer.save(created_from=self.request.user)
         print(self.request.data) 
 
+
     def retrieve(self, request, *args, **kwargs):
-         video = get_object_or_404(Video, pk=kwargs['pk'])
-         serializer = VideoSerializer(video, context={'request': request})
-         return Response(serializer.data)
+        video = get_object_or_404(Video, pk=kwargs['pk'])
+        qualities = VideoQuality.objects.filter(video=video)
+        video_data = VideoSerializer(video, context={'request': request}).data
+        quality_data = VideoQualitySerializer(qualities, many=True, context={'request': request}).data
+        video_data['qualities'] = quality_data
+        return Response(video_data)
+
  
     def perform_update(self, serializer):
         serializer.save(created_from=self.request.user)

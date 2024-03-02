@@ -22,7 +22,6 @@ class CustomUserAdmin(admin.ModelAdmin):
                     'email',
                     'is_verified',
                     'password',
-                    'password',
                     'created_at',
                     'is_guest'
                 )
