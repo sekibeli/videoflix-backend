@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.conf import settings
 from user.models import CustomUser
 from .models import Video
+from django.contrib.auth.password_validation import validate_password
 
 class VideoSerializer(serializers.ModelSerializer):
     video_url = serializers.SerializerMethodField('get_video_url')
@@ -27,3 +28,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True},
             'is_verified': {'read_only': True},
         }
+
+    def validate_password(self, value):
+        validate_password(value)
+        return value
