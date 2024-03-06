@@ -10,6 +10,11 @@ class Category(models.TextChoices):
         kids = 'kids'
         funny = 'funny'
         noidea = 'noidea'
+        action = 'action'
+        drama = 'drama'
+        horror = 'horror'
+        krimi = 'krimi'
+        thriller = 'thriller'
         
 class Video(models.Model):    
     created_at = models.DateField(default=date.today)
@@ -21,6 +26,8 @@ class Video(models.Model):
     likes = models.ManyToManyField('user.CustomUser', related_name='likers', blank=True)
     thumbnail = models.ImageField(upload_to='thumbnails', null=True, blank=True)
     view_count = models.IntegerField(default=0)
+    film_rating = models.IntegerField(default=0)
+
     
     def __str__(self):
         return self.title

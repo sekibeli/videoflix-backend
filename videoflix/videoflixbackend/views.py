@@ -87,9 +87,7 @@ class VideoViewSet(viewsets.ModelViewSet):
 
  
     def perform_update(self, serializer):
-        serializer.save(created_from=self.request.user)
-        
-    
+        serializer.save(created_from=self.request.user)    
    
     
     @action(detail=False, methods=['get'])
