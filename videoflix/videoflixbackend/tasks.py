@@ -36,8 +36,12 @@ def create_thumbnail(source, output, video_id):
     video.save()
 
 
-def convert_and_save_quality(video, base_path, quality_label, resolution):
-    output = f'{base_path}-{quality_label}.mp4'
+def convert_and_save_quality(video, quality_label, resolution):
+    video_filename = os.path.basename(video.video_file.name)
+    quality_filename = f'{quality_label}-{video_filename}'
+
+    quality_video_path = os.path.join(settings.MEDIA_ROOT, 'videos', quality_filename)
+
     cmd = [
         'ffmpeg',
         '-i', video.video_file.path,
@@ -46,16 +50,18 @@ def convert_and_save_quality(video, base_path, quality_label, resolution):
         '-crf', '23',
         '-c:a', 'aac',
         '-strict', '-2',
-        output
+        quality_video_path
     ]
     subprocess.run(cmd, capture_output=True)
     
-    relative_path = os.path.relpath(output, settings.MEDIA_ROOT)
+    relative_quality_path = os.path.join('videos', quality_filename)
+    
     VideoQuality.objects.create(
         video=video,
         quality=quality_label,
-        video_file=relative_path
+        video_file=relative_quality_path
     )
+
 
 
 

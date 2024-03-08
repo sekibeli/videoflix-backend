@@ -33,9 +33,7 @@ class VideoQualitySerializer(serializers.ModelSerializer):
         print("Request:", request)  # Debug-Ausgabe
         print("URL vor build_absolute_uri:", video_file_url)  # Debug-Ausgabe
         if request is not None:
-            full_url = request.build_absolute_uri(video_file_url)
-            print("Vollständige URL:", full_url)  # Debug-Ausgabe
-            return full_url
+            return request.build_absolute_uri(video_file_url)
         return video_file_url
 
     
