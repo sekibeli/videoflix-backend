@@ -59,7 +59,8 @@ INSTALLED_APPS = [
     'django_rq',
     'import_export',
     'user',
-    'videoflix'
+    'videoflix',
+    
 ]
 
 AUTH_USER_MODEL = 'user.CustomUser'
