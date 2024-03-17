@@ -1,9 +1,11 @@
-import os
 from django.conf import settings
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 from django.dispatch import receiver
 
-from videoflixbackend.tasks import convert_480p, convert_720p, convert_1080p, create_thumbnail
+from videoflixbackend.tasks import  convert_and_save_quality, create_thumbnail
 from .models import Video
 from django.db.models.signals import post_save, post_delete, pre_save
 import django_rq
@@ -25,16 +27,20 @@ def video_post_save(sender, instance, created, **kwargs):
         print('Neues Video erstellt', instance.video_file.path)
         queue = django_rq.get_queue('default',autocommit=True)          
        
-        base, _ = os.path.splitext(instance.video_file.path)
+        # base, _ = os.path.splitext(instance.video_file.path)
+        # base = base.replace(settings.MEDIA_ROOT + '/', '', 1)
 
-        # Fügen Sie den Thumbnail-Erstellungsjob zur Queue hinzu
-        thumbnail_output = base + '-thumbnail.jpg'
+        thumbnail_output = f'thumbnails/{instance.id}-thumbnail.jpg'
         queue.enqueue(create_thumbnail, instance.video_file.path, thumbnail_output, instance.id)
               
         #Jobs zur KOnvertierung werden in die queue gestellt
-        queue.enqueue(convert_480p, instance.video_file.path, base + '-480p.mp4')
-        queue.enqueue(convert_720p, instance.video_file.path, base + '-720p.mp4')
-        queue.enqueue(convert_1080p, instance.video_file.path, base + '-1080p.mp4')
+        queue.enqueue(convert_and_save_quality, instance, '360px', '480x360')
+        queue.enqueue(convert_and_save_quality, instance,  '720p', '1280x720')
+        queue.enqueue(convert_and_save_quality, instance,'1080p', '1920x1080')
+
+        # queue.enqueue(convert_480p, instance.video_file.path, base + '-480p.mp4')
+        # queue.enqueue(convert_720p, instance.video_file.path, base + '-720p.mp4')
+        # queue.enqueue(convert_1080p, instance.video_file.path, base + '-1080p.mp4')
        
          #Löschen des Cache
     cache.delete('video_list_cache_key')
@@ -88,11 +94,12 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
 
     email_html_message = render_to_string('user_reset_password.html', context)
     email_plaintext_message = render_to_string('user_reset_password.txt', context)
+
          
     msg = EmailMultiAlternatives(
         "Password Reset for {title}".format(title="Password Reset for Videoflix"),
         email_plaintext_message,
-        "Alcazar85@gmx.de",
+        settings.EMAIL_HOST_USER,
         [reset_password_token.user.email]
     )
     msg.attach_alternative(email_html_message, "text/html")

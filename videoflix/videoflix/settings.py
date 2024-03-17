@@ -59,6 +59,8 @@ INSTALLED_APPS = [
     'django_rq',
     'import_export',
     'user',
+    'videoflix',
+    
 ]
 
 AUTH_USER_MODEL = 'user.CustomUser'
@@ -163,6 +165,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        'OPTIONS': {
+            'min_length': 8,
+        }
     },
     {
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",

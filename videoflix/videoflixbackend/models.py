@@ -10,9 +10,13 @@ class Category(models.TextChoices):
         kids = 'kids'
         funny = 'funny'
         noidea = 'noidea'
+        action = 'action'
+        drama = 'drama'
+        horror = 'horror'
+        krimi = 'krimi'
+        thriller = 'thriller'
         
-class Video(models.Model):
-    
+class Video(models.Model):    
     created_at = models.DateField(default=date.today)
     created_from = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
     title = models.CharField(max_length=80)
@@ -22,7 +26,13 @@ class Video(models.Model):
     likes = models.ManyToManyField('user.CustomUser', related_name='likers', blank=True)
     thumbnail = models.ImageField(upload_to='thumbnails', null=True, blank=True)
     view_count = models.IntegerField(default=0)
+    film_rating = models.IntegerField(default=0)
+
     
     def __str__(self):
         return self.title
 
+class VideoQuality(models.Model):
+     video = models.ForeignKey(Video, related_name='qualities',on_delete=models.CASCADE)
+     quality = models.CharField(max_length=20)
+     video_file = models.FileField(upload_to='videos', blank=True, null=True)
