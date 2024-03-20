@@ -27,17 +27,16 @@ def video_post_save(sender, instance, created, **kwargs):
         print('Neues Video erstellt', instance.video_file.path)
         queue = django_rq.get_queue('default',autocommit=True)          
        
-        base, _ = os.path.splitext(instance.video_file.path)
-        base = base.replace(settings.MEDIA_ROOT + '/', '', 1)
+        # base, _ = os.path.splitext(instance.video_file.path)
+        # base = base.replace(settings.MEDIA_ROOT + '/', '', 1)
 
-        # Fügen Sie den Thumbnail-Erstellungsjob zur Queue hinzu
-        thumbnail_output = base + '-thumbnail.jpg'
+        thumbnail_output = f'thumbnails/{instance.id}-thumbnail.jpg'
         queue.enqueue(create_thumbnail, instance.video_file.path, thumbnail_output, instance.id)
               
         #Jobs zur KOnvertierung werden in die queue gestellt
-        queue.enqueue(convert_and_save_quality, instance, base, '480p', '640x480')
-        queue.enqueue(convert_and_save_quality, instance, base, '720p', '1280x720')
-        queue.enqueue(convert_and_save_quality, instance, base, '1080p', '1920x1080')
+        queue.enqueue(convert_and_save_quality, instance, '360px', '480x360')
+        queue.enqueue(convert_and_save_quality, instance,  '720p', '1280x720')
+        queue.enqueue(convert_and_save_quality, instance,'1080p', '1920x1080')
 
         # queue.enqueue(convert_480p, instance.video_file.path, base + '-480p.mp4')
         # queue.enqueue(convert_720p, instance.video_file.path, base + '-720p.mp4')
