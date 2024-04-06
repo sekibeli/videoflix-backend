@@ -32,10 +32,11 @@ class VideoSearchView(APIView):
         search = request.query_params.get('search', None)
         if search is not None:
             videos = Video.objects.filter(
-                Q(title__icontains=search) | Q(description__icontains=search)
+                Q(title__icontains=search) | Q(description__icontains=search),
+                isVisible=True
             )
         else:
-            videos = Video.objects.all()
+            videos = Video.objects.filter(isVisible=True)
         
         # Passen Sie den Kontext beim Erstellen des Serializers an
         serializer = VideoSerializer(videos, many=True, context={'request': request})
