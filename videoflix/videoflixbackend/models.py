@@ -27,6 +27,7 @@ class Video(models.Model):
     thumbnail = models.ImageField(upload_to='thumbnails', null=True, blank=True)
     view_count = models.IntegerField(default=0)
     film_rating = models.IntegerField(default=0)
+    isVisible = models.BooleanField(default= False)
 
     
     def __str__(self):
