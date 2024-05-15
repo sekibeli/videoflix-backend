@@ -121,7 +121,7 @@ CACHES = {
 RQ_QUEUES = {
     'default': {
         'HOST': 'localhost',
-        'PASSWORD':'foobared',
+        'PASSWORD':'H3og6Ed95js!',
         'PORT': 6379,
         'DB': 0,
         'DEFAULT_TIMEOUT': 360,
