@@ -50,6 +50,10 @@ class VideoViewSet(viewsets.ModelViewSet):
 
  
     def list(self, request, *args, **kwargs):
+        cache.set('test_key', 'test_value', timeout=30)
+        value = cache.get('test_key')
+        print(value)  # Sollte 'test_value' ausgeben
+
         cache_key = 'video_list_cache_key'
         video_list = cache.get(cache_key)
 
