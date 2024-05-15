@@ -31,16 +31,18 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'alexander-peil.developerakademie.org'
+    'alexander-peil.developerakademie.org',
+    '35.216.177.61'
 ]
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:4200',
+    'https://videoflix.alexander-peil.de',
 ]
 
 IMPORT_EXPORT_USE_TRANSACTIONS = True
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+#STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # Application definition
 
 INSTALLED_APPS = [
@@ -109,7 +111,7 @@ CACHES = {
               "BACKEND": "django_redis.cache.RedisCache",
               "LOCATION": "redis://127.0.0.1:6379/1",
               "OPTIONS": { 
-                  "PASSWORD":'foobared',
+                  "PASSWORD":'H3og6Ed95js!',
                   "CLIENT_CLASS": "django_redis.client.DefaultClient"
                   },
               "KEY_PREFIX": "videoflix"
@@ -180,6 +182,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 DEFAULT_FROM_EMAIL = os.environ.get('emailUser')
 FRONTEND_URL = 'http://localhost:4200'
+#FRONTEND_URL = 'https://videoflix.alexander-peil.de'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.environ.get('emailHost') 
