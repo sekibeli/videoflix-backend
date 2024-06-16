@@ -32,10 +32,11 @@ class VideoSearchView(APIView):
         search = request.query_params.get('search', None)
         if search is not None:
             videos = Video.objects.filter(
-                Q(title__icontains=search) | Q(description__icontains=search)
+                Q(title__icontains=search) | Q(description__icontains=search),
+                isVisible=True
             )
         else:
-            videos = Video.objects.all()
+            videos = Video.objects.filter(isVisible=True)
         
         serializer = VideoSerializer(videos, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -49,6 +50,10 @@ class VideoViewSet(viewsets.ModelViewSet):
 
  
     def list(self, request, *args, **kwargs):
+        cache.set('test_key', 'test_value', timeout=30)
+        value = cache.get('test_key')
+        print(value)  # Sollte 'test_value' ausgeben
+
         cache_key = 'video_list_cache_key'
         video_list = cache.get(cache_key)
 
@@ -64,7 +69,7 @@ class VideoViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         current_user = self.request.user 
         if current_user.is_authenticated:
-            queryset = Video.objects.all()
+            queryset = Video.objects.filter(isVisible=True)
             category = self.request.query_params.get('category', None)
             if category is not None:
                     queryset = queryset.filter(category=category)
@@ -93,7 +98,7 @@ class VideoViewSet(viewsets.ModelViewSet):
     def videos_today(self, request):
         today = datetime.now().date()
         tomorrow = today + timedelta(days=1)
-        queryset = Video.objects.filter(created_at__gte=today, created_at__lt=tomorrow)            
+        queryset = Video.objects.filter(created_at__gte=today, created_at__lt=tomorrow, isVisible=True)            
         serializer = VideoSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
     
@@ -103,7 +108,7 @@ class VideoViewSet(viewsets.ModelViewSet):
         yesterday = today - timedelta(days=1)
        
     
-        queryset = Video.objects.filter(created_at__gte=yesterday, created_at__lt=today)
+        queryset = Video.objects.filter(created_at__gte=yesterday, created_at__lt=today, isVisible=True)
         serializer = VideoSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
     
@@ -112,7 +117,7 @@ class VideoViewSet(viewsets.ModelViewSet):
         today = datetime.now().date()
         tomorrow = today + timedelta(days=1) 
         three_days_ago = today - timedelta(days=3)
-        queryset = Video.objects.filter(created_at__gte=three_days_ago, created_at__lt=tomorrow)
+        queryset = Video.objects.filter(created_at__gte=three_days_ago, created_at__lt=tomorrow, isVisible=True)
         serializer = VideoSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
     
@@ -120,7 +125,7 @@ class VideoViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def popular_videos(self, request):
    
-        videos_with_like_count = Video.objects.annotate(likes_count=Count('likes')).order_by('-likes_count')[:10]
+        videos_with_like_count = Video.objects.filter(isVisible=True).annotate(likes_count=Count('likes')).order_by('-likes_count')[:10]
 
         serializer = VideoSerializer(videos_with_like_count, many=True, context={'request': request})
 
@@ -129,7 +134,7 @@ class VideoViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def mostSeen_videos(self, request):
         print("mostSeen_videos wurde aufgerufen.")
-        videos_seen = Video.objects.annotate(views_count=Count('view_count')).order_by('-view_count')[:10]
+        videos_seen = Video.objects.filter(isVisible=True).annotate(views_count=Count('view_count')).order_by('-view_count')[:10]
         serializer = VideoSerializer(videos_seen, many=True, context={'request': request})
         return Response(serializer.data)
     
