@@ -43,10 +43,6 @@ def video_post_save(sender, instance, created, **kwargs):
         email_from = settings.EMAIL_HOST_USER
         recipient_list = CustomUser.objects.filter(is_superuser=True).values_list('email', flat=True)
         send_mail(subject, message, email_from, recipient_list)
-        
-        # queue.enqueue(convert_480p, instance.video_file.path, base + '-480p.mp4')
-        # queue.enqueue(convert_720p, instance.video_file.path, base + '-720p.mp4')
-        # queue.enqueue(convert_1080p, instance.video_file.path, base + '-1080p.mp4')
        
          #Löschen des Cache
     cache.delete('video_list_cache_key')
