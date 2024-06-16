@@ -30,8 +30,8 @@ class VideoQualitySerializer(serializers.ModelSerializer):
     def get_video_file_url(self, obj):
         request = self.context.get('request')
         video_file_url = obj.video_file.url if hasattr(obj.video_file, 'url') else ''
-        print("Request:", request)  # Debug-Ausgabe
-        print("URL vor build_absolute_uri:", video_file_url)  # Debug-Ausgabe
+        print("Request:", request)  
+        print("URL vor build_absolute_uri:", video_file_url) 
         if request is not None:
             return request.build_absolute_uri(video_file_url)
         return video_file_url

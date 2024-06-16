@@ -10,6 +10,10 @@ from .models import Video
 from django.db.models.signals import post_save, post_delete, pre_save
 import django_rq
 from django.core.cache import cache
+from django.core.mail import send_mail
+# from django.contrib.auth.models import User
+from user.models import CustomUser
+
 
 
 # These imports sare for the passwort reset logic from DRF 
@@ -29,17 +33,22 @@ def video_post_save(sender, instance, created, **kwargs):
     cache.delete('popular_videos_cache_key')
     cache.delete('most_seen_videos_cache_key')
     if created:
-        print('Neues Video erstellt', instance.video_file.path)
         queue = django_rq.get_queue('default',autocommit=True)          
        
 
         thumbnail_output = f'thumbnails/{instance.id}-thumbnail.jpg'
         queue.enqueue(create_thumbnail, instance.video_file.path, thumbnail_output, instance.id)
               
-        #Jobs zur KOnvertierung werden in die queue gestellt
         queue.enqueue(convert_and_save_quality, instance, '360px', '480x360')
         queue.enqueue(convert_and_save_quality, instance,  '720p', '1280x720')
         queue.enqueue(convert_and_save_quality, instance,'1080p', '1920x1080')
+
+         # E-Mail an (alle) Superuser senden
+        subject = 'Neues Video hochgeladen'
+        message = f'Ein neues Video mit dem Titel "{instance.title}" wurde hochgeladen und wartet auf Überprüfung.'
+        email_from = settings.EMAIL_HOST_USER
+        recipient_list = CustomUser.objects.filter(is_superuser=True).values_list('email', flat=True)
+        send_mail(subject, message, email_from, recipient_list)
        
          #Löschen des Cache
     cache.delete('video_list_cache_key')
