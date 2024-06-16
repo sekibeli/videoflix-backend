@@ -26,7 +26,6 @@ from django_rest_passwordreset.signals import reset_password_token_created
 
 @receiver(post_save, sender =Video)
 def video_post_save(sender, instance, created, **kwargs):
-    print('Video wurde gespeichert')
     if created:
         queue = django_rq.get_queue('default',autocommit=True)          
 
