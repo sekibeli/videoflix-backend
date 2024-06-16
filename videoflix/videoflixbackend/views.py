@@ -67,7 +67,7 @@ class VideoViewSet(viewsets.ModelViewSet):
     
   #  @cache_page(CACHE_TTL)
     def get_queryset(self):
-        current_user = self.request.user #eingloggten user holen
+        current_user = self.request.user 
         if current_user.is_authenticated:
             queryset = Video.objects.filter(isVisible=True)
             category = self.request.query_params.get('category', None)
@@ -127,10 +127,8 @@ class VideoViewSet(viewsets.ModelViewSet):
    
         videos_with_like_count = Video.objects.filter(isVisible=True).annotate(likes_count=Count('likes')).order_by('-likes_count')[:10]
 
-        # Verwenden des VideoSerializers zur Serialisierung der Video-Daten
         serializer = VideoSerializer(videos_with_like_count, many=True, context={'request': request})
 
-        # Senden der serialisierten Daten als Response
         return Response(serializer.data)
     
     @action(detail=False, methods=['get'])
