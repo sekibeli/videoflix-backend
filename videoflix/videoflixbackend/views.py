@@ -42,8 +42,7 @@ class VideoSearchView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class VideoViewSet(viewsets.ModelViewSet):
-    
+class VideoViewSet(viewsets.ModelViewSet):    
     serializer_class = VideoSerializer
     permission_classes = [IsAuthenticated]
     parser_classes = (MultiPartParser, FormParser)
@@ -52,7 +51,7 @@ class VideoViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         cache.set('test_key', 'test_value', timeout=30)
         value = cache.get('test_key')
-        print(value)  # Sollte 'test_value' ausgeben
+        print(value) 
 
         cache_key = 'video_list_cache_key'
         video_list = cache.get(cache_key)
@@ -66,7 +65,6 @@ class VideoViewSet(viewsets.ModelViewSet):
     
     
     def get_queryset(self):
-        current_user = self.request.user 
         current_user = self.request.user 
         if current_user.is_authenticated:
             queryset = Video.objects.filter(isVisible=True)
@@ -157,8 +155,6 @@ class VideoViewSet(viewsets.ModelViewSet):
             cache.set(cache_key, popular_videos, timeout=CACHE_TTL)
 
         return Response(serializer.data)
-    
-        return Response(popular_videos)
 
     @action(detail=False, methods=['get'])
     def mostSeen_videos(self, request):
