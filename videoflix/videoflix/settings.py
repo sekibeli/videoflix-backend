@@ -31,15 +31,18 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'alexander-peil.developerakademie.org'
+    'alexander-peil.developerakademie.org',
+    '35.216.177.61'
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:4200'
+    'http://localhost:4200',
+    'https://videoflix.alexander-peil.de',
 ]
 
 IMPORT_EXPORT_USE_TRANSACTIONS = True
 
+#STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # Application definition
 
 INSTALLED_APPS = [
@@ -71,7 +74,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",   
@@ -108,7 +111,8 @@ CACHES = {
               "BACKEND": "django_redis.cache.RedisCache",
               "LOCATION": "redis://127.0.0.1:6379/1",
               "OPTIONS": { 
-                  "PASSWORD":'foobared',
+                    # "PASSWORD":'foobared',
+                  "PASSWORD":os.environ.get('redisPassword'),
                   "CLIENT_CLASS": "django_redis.client.DefaultClient"
                   },
               "KEY_PREFIX": "videoflix"
@@ -118,7 +122,8 @@ CACHES = {
 RQ_QUEUES = {
     'default': {
         'HOST': 'localhost',
-        'PASSWORD':'foobared',
+        # "PASSWORD":'foobared',
+        'PASSWORD': os.environ.get('redisPassword'),
         'PORT': 6379,
         'DB': 0,
         'DEFAULT_TIMEOUT': 360,
@@ -178,7 +183,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 DEFAULT_FROM_EMAIL = os.environ.get('emailUser')
-FRONTEND_URL = 'http://localhost:4200'
+# FRONTEND_URL = 'http://localhost:4200'
+FRONTEND_URL = 'https://videoflix.alexander-peil.de'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.environ.get('emailHost') 
@@ -204,6 +210,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
