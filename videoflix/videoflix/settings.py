@@ -111,6 +111,7 @@ CACHES = {
               "BACKEND": "django_redis.cache.RedisCache",
               "LOCATION": "redis://127.0.0.1:6379/1",
               "OPTIONS": { 
+                    # "PASSWORD":'foobared',
                   "PASSWORD":os.environ.get('redisPassword'),
                   "CLIENT_CLASS": "django_redis.client.DefaultClient"
                   },
@@ -121,6 +122,7 @@ CACHES = {
 RQ_QUEUES = {
     'default': {
         'HOST': 'localhost',
+        # "PASSWORD":'foobared',
         'PASSWORD': os.environ.get('redisPassword'),
         'PORT': 6379,
         'DB': 0,
@@ -208,6 +210,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type

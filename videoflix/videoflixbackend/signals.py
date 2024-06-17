@@ -24,20 +24,21 @@ from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
 
 
-@receiver(post_save, sender =Video)
+@receiver(post_save, sender=Video)
 def video_post_save(sender, instance, created, **kwargs):
-    print('Video wurde gespeichert')
+    cache.delete('video_list_cache_key')
+    cache.delete('videos_today_cache_key')
+    cache.delete('videos_yesterday_cache_key')
+    cache.delete('recent_videos_cache_key')
+    cache.delete('popular_videos_cache_key')
+    cache.delete('most_seen_videos_cache_key')
     if created:
-        print('Neues Video erstellt', instance.video_file.path)
         queue = django_rq.get_queue('default',autocommit=True)          
        
-        # base, _ = os.path.splitext(instance.video_file.path)
-        # base = base.replace(settings.MEDIA_ROOT + '/', '', 1)
 
         thumbnail_output = f'thumbnails/{instance.id}-thumbnail.jpg'
         queue.enqueue(create_thumbnail, instance.video_file.path, thumbnail_output, instance.id)
               
-        #Jobs zur KOnvertierung werden in die queue gestellt
         queue.enqueue(convert_and_save_quality, instance, '360px', '480x360')
         queue.enqueue(convert_and_save_quality, instance,  '720p', '1280x720')
         queue.enqueue(convert_and_save_quality, instance,'1080p', '1920x1080')
@@ -48,17 +49,19 @@ def video_post_save(sender, instance, created, **kwargs):
         email_from = settings.EMAIL_HOST_USER
         recipient_list = CustomUser.objects.filter(is_superuser=True).values_list('email', flat=True)
         send_mail(subject, message, email_from, recipient_list)
-        
-        # queue.enqueue(convert_480p, instance.video_file.path, base + '-480p.mp4')
-        # queue.enqueue(convert_720p, instance.video_file.path, base + '-720p.mp4')
-        # queue.enqueue(convert_1080p, instance.video_file.path, base + '-1080p.mp4')
        
          #Löschen des Cache
     cache.delete('video_list_cache_key')
 
 
-@receiver(post_delete, sender = Video)        
+@receiver(post_delete, sender=Video)
 def video_post_delete(sender, instance, **kwargs):
+    cache.delete('video_list_cache_key')
+    cache.delete('videos_today_cache_key')
+    cache.delete('videos_yesterday_cache_key')
+    cache.delete('recent_videos_cache_key')
+    cache.delete('popular_videos_cache_key')
+    cache.delete('most_seen_videos_cache_key')
     if instance.video_file:
         if os.path.isfile(instance.video_file.path):
             base, _ = os.path.splitext(instance.video_file.path)
