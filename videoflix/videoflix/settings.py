@@ -181,8 +181,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 DEFAULT_FROM_EMAIL = os.environ.get('emailUser')
-FRONTEND_URL = 'http://localhost:4200'
-#FRONTEND_URL = 'https://videoflix.alexander-peil.de'
+#FRONTEND_URL = 'http://localhost:4200'
+FRONTEND_URL = 'https://videoflix.alexander-peil.de'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.environ.get('emailHost') 
