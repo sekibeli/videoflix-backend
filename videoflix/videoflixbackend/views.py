@@ -1,13 +1,8 @@
 from django.conf import settings
-from django.http import JsonResponse
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth import authenticate
-from django.views.decorators.cache import cache_page
+from django.shortcuts import get_object_or_404
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
-from django.utils.decorators import method_decorator
 from django.core.cache import cache
 from django.db.models import Count, Q
-from django.core import serializers
 
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
@@ -19,13 +14,8 @@ from rest_framework.views import APIView
 from .serializers import VideoSerializer, VideoQualitySerializer
 from .models import Video, VideoQuality
 from datetime import datetime, timedelta
-import os
-
-from django.contrib.postgres.search import SearchVector
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
-
-
 
 class VideoSearchView(APIView):
     def get(self, request, *args, **kwargs):
@@ -37,23 +27,16 @@ class VideoSearchView(APIView):
             )
         else:
             videos = Video.objects.filter(isVisible=True)
-        
+
         serializer = VideoSerializer(videos, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 class VideoViewSet(viewsets.ModelViewSet):
-    
     serializer_class = VideoSerializer
     permission_classes = [IsAuthenticated]
     parser_classes = (MultiPartParser, FormParser)
 
- 
     def list(self, request, *args, **kwargs):
-        cache.set('test_key', 'test_value', timeout=30)
-        value = cache.get('test_key')
-        print(value)  # Sollte 'test_value' ausgeben
-
         cache_key = 'video_list_cache_key'
         video_list = cache.get(cache_key)
 
@@ -61,25 +44,29 @@ class VideoViewSet(viewsets.ModelViewSet):
             response = super(VideoViewSet, self).list(request, *args, **kwargs)
             video_list = response.data
             cache.set(cache_key, video_list, timeout=CACHE_TTL)
+            from_cache = False
+        else:
+            from_cache = True
 
-        return Response(video_list)
-    
-    
-  #  @cache_page(CACHE_TTL)
+        response = Response(video_list)
+        if from_cache:
+            response['X-Cache'] = 'HIT'
+        else:
+            response['X-Cache'] = 'MISS'
+        return response
+
     def get_queryset(self):
-        current_user = self.request.user 
+        current_user = self.request.user
         if current_user.is_authenticated:
             queryset = Video.objects.filter(isVisible=True)
             category = self.request.query_params.get('category', None)
             if category is not None:
-                    queryset = queryset.filter(category=category)
-        return queryset
-    
-   
+                queryset = queryset.filter(category=category)
+            return queryset
+
     def perform_create(self, serializer):
         serializer.save(created_from=self.request.user)
-        print(self.request.data) 
-
+        cache.delete('video_list_cache_key')
 
     def retrieve(self, request, *args, **kwargs):
         video = get_object_or_404(Video, pk=kwargs['pk'])
@@ -89,58 +76,126 @@ class VideoViewSet(viewsets.ModelViewSet):
         video_data['qualities'] = quality_data
         return Response(video_data)
 
- 
     def perform_update(self, serializer):
-        serializer.save(created_from=self.request.user)    
-   
-    
+        serializer.save(created_from=self.request.user)
+        cache.delete('video_list_cache_key')
+
     @action(detail=False, methods=['get'])
     def videos_today(self, request):
-        today = datetime.now().date()
-        tomorrow = today + timedelta(days=1)
-        queryset = Video.objects.filter(created_at__gte=today, created_at__lt=tomorrow, isVisible=True)            
-        serializer = VideoSerializer(queryset, many=True, context={'request': request})
-        return Response(serializer.data)
-    
+        cache_key = 'videos_today_cache_key'
+        videos_today = cache.get(cache_key)
+
+        if not videos_today:
+            today = datetime.now().date()
+            tomorrow = today + timedelta(days=1)
+            queryset = Video.objects.filter(created_at__gte=today, created_at__lt=tomorrow, isVisible=True)
+            serializer = VideoSerializer(queryset, many=True, context={'request': request})
+            videos_today = serializer.data
+            cache.set(cache_key, videos_today, timeout=CACHE_TTL)
+            from_cache = False
+        else:
+            from_cache = True
+
+        response = Response(videos_today)
+        if from_cache:
+            response['X-Cache'] = 'HIT'
+        else:
+            response['X-Cache'] = 'MISS'
+        return response
+
     @action(detail=False, methods=['get'])
     def videos_yesterday(self, request):
-        today = datetime.now().date()
-        yesterday = today - timedelta(days=1)
-       
-    
-        queryset = Video.objects.filter(created_at__gte=yesterday, created_at__lt=today, isVisible=True)
-        serializer = VideoSerializer(queryset, many=True, context={'request': request})
-        return Response(serializer.data)
-    
+        cache_key = 'videos_yesterday_cache_key'
+        videos_yesterday = cache.get(cache_key)
+
+        if not videos_yesterday:
+            today = datetime.now().date()
+            yesterday = today - timedelta(days=1)
+            queryset = Video.objects.filter(created_at__gte=yesterday, created_at__lt=today, isVisible=True)
+            serializer = VideoSerializer(queryset, many=True, context={'request': request})
+            videos_yesterday = serializer.data
+            cache.set(cache_key, videos_yesterday, timeout=CACHE_TTL)
+            from_cache = False
+        else:
+            from_cache = True
+
+        response = Response(videos_yesterday)
+        if from_cache:
+            response['X-Cache'] = 'HIT'
+        else:
+            response['X-Cache'] = 'MISS'
+        return response
+
     @action(detail=False, methods=['get'])
     def recentVideos(self, request):
-        today = datetime.now().date()
-        tomorrow = today + timedelta(days=1) 
-        three_days_ago = today - timedelta(days=3)
-        queryset = Video.objects.filter(created_at__gte=three_days_ago, created_at__lt=tomorrow, isVisible=True)
-        serializer = VideoSerializer(queryset, many=True, context={'request': request})
-        return Response(serializer.data)
-    
-    
+        cache_key = 'recent_videos_cache_key'
+        recent_videos = cache.get(cache_key)
+
+        if not recent_videos:
+            today = datetime.now().date()
+            tomorrow = today + timedelta(days=1)
+            three_days_ago = today - timedelta(days=3)
+            queryset = Video.objects.filter(created_at__gte=three_days_ago, created_at__lt=tomorrow, isVisible=True)
+            serializer = VideoSerializer(queryset, many=True, context={'request': request})
+            recent_videos = serializer.data
+            cache.set(cache_key, recent_videos, timeout=CACHE_TTL)
+            from_cache = False
+        else:
+            from_cache = True
+
+        response = Response(recent_videos)
+        if from_cache:
+            response['X-Cache'] = 'HIT'
+        else:
+            response['X-Cache'] = 'MISS'
+        return response
+
     @action(detail=False, methods=['get'])
     def popular_videos(self, request):
-   
-        videos_with_like_count = Video.objects.filter(isVisible=True).annotate(likes_count=Count('likes')).order_by('-likes_count')[:10]
+        cache_key = 'popular_videos_cache_key'
+        popular_videos = cache.get(cache_key)
 
-        serializer = VideoSerializer(videos_with_like_count, many=True, context={'request': request})
+        if not popular_videos:
+            videos_with_like_count = Video.objects.filter(isVisible=True).annotate(likes_count=Count('likes')).order_by('-likes_count')[:10]
+            serializer = VideoSerializer(videos_with_like_count, many=True, context={'request': request})
+            popular_videos = serializer.data
+            cache.set(cache_key, popular_videos, timeout=CACHE_TTL)
+            from_cache = False
+        else:
+            from_cache = True
 
-        return Response(serializer.data)
-    
+        response = Response(popular_videos)
+        if from_cache:
+            response['X-Cache'] = 'HIT'
+        else:
+            response['X-Cache'] = 'MISS'
+        return response
+
     @action(detail=False, methods=['get'])
     def mostSeen_videos(self, request):
-        print("mostSeen_videos wurde aufgerufen.")
-        videos_seen = Video.objects.filter(isVisible=True).annotate(views_count=Count('view_count')).order_by('-view_count')[:10]
-        serializer = VideoSerializer(videos_seen, many=True, context={'request': request})
-        return Response(serializer.data)
-    
+        cache_key = 'most_seen_videos_cache_key'
+        most_seen_videos = cache.get(cache_key)
+
+        if not most_seen_videos:
+            videos_seen = Video.objects.filter(isVisible=True).annotate(views_count=Count('view_count')).order_by('-view_count')[:10]
+            serializer = VideoSerializer(videos_seen, many=True, context={'request': request})
+            most_seen_videos = serializer.data
+            cache.set(cache_key, most_seen_videos, timeout=CACHE_TTL)
+            from_cache = False
+        else:
+            from_cache = True
+
+        response = Response(most_seen_videos)
+        if from_cache:
+            response['X-Cache'] = 'HIT'
+        else:
+            response['X-Cache'] = 'MISS'
+        return response
+
     @action(detail=True, methods=['post'])
     def increment_view_count(self, request, pk=None):
-        video = self.get_object() 
-        video.view_count += 1 
-        video.save() 
-        return Response({'status': 'view count incremented'}) 
+        video = self.get_object()
+        video.view_count += 1
+        video.save()
+        cache.delete('video_list_cache_key')
+        return Response({'status': 'view count incremented'})
