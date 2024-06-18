@@ -111,8 +111,8 @@ CACHES = {
               "BACKEND": "django_redis.cache.RedisCache",
               "LOCATION": "redis://127.0.0.1:6379/1",
               "OPTIONS": { 
-                    "PASSWORD":'foobared',
-                #   "PASSWORD":os.environ.get('redisPassword'),
+                    # "PASSWORD":'foobared',
+                  "PASSWORD":os.environ.get('redisPassword'),
                   "CLIENT_CLASS": "django_redis.client.DefaultClient"
                   },
               "KEY_PREFIX": "videoflix"
@@ -122,8 +122,8 @@ CACHES = {
 RQ_QUEUES = {
     'default': {
         'HOST': 'localhost',
-        "PASSWORD":'foobared',
-        # 'PASSWORD': os.environ.get('redisPassword'),
+        # "PASSWORD":'foobared',
+        'PASSWORD': os.environ.get('redisPassword'),
         'PORT': 6379,
         'DB': 0,
         'DEFAULT_TIMEOUT': 360,
@@ -183,7 +183,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 DEFAULT_FROM_EMAIL = os.environ.get('emailUser')
-# FRONTEND_URL = 'http://localhost:4200'
+#FRONTEND_URL = 'http://localhost:4200'
 FRONTEND_URL = 'https://videoflix.alexander-peil.de'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -210,7 +210,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type

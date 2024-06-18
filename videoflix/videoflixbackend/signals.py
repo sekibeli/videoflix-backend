@@ -24,11 +24,17 @@ from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
 
 
-@receiver(post_save, sender =Video)
+@receiver(post_save, sender=Video)
 def video_post_save(sender, instance, created, **kwargs):
-    print('Video wurde gespeichert')
+    cache.delete('video_list_cache_key')
+    cache.delete('videos_today_cache_key')
+    cache.delete('videos_yesterday_cache_key')
+    cache.delete('recent_videos_cache_key')
+    cache.delete('popular_videos_cache_key')
+    cache.delete('most_seen_videos_cache_key')
     if created:
         queue = django_rq.get_queue('default',autocommit=True)          
+       
 
         thumbnail_output = f'thumbnails/{instance.id}-thumbnail.jpg'
         queue.enqueue(create_thumbnail, instance.video_file.path, thumbnail_output, instance.id)
@@ -48,8 +54,14 @@ def video_post_save(sender, instance, created, **kwargs):
     cache.delete('video_list_cache_key')
 
 
-@receiver(post_delete, sender = Video)        
+@receiver(post_delete, sender=Video)
 def video_post_delete(sender, instance, **kwargs):
+    cache.delete('video_list_cache_key')
+    cache.delete('videos_today_cache_key')
+    cache.delete('videos_yesterday_cache_key')
+    cache.delete('recent_videos_cache_key')
+    cache.delete('popular_videos_cache_key')
+    cache.delete('most_seen_videos_cache_key')
     if instance.video_file:
         if os.path.isfile(instance.video_file.path):
             base, _ = os.path.splitext(instance.video_file.path)

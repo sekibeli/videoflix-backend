@@ -64,11 +64,10 @@ class SignupView(APIView):
         email.attach_alternative(html_content, "text/html")
         email.send()
 
-
-
 class VerifyEmailView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
+
     def get(self, request, token, format=None):
         try:
             user = CustomUser.objects.get(verification_token=token)
@@ -76,7 +75,8 @@ class VerifyEmailView(APIView):
             user.save()
             return Response({"message": "E-Mail successfully verified."}, status=status.HTTP_200_OK)
         except CustomUser.DoesNotExist:
-            return Response({"error": "Invaild Token"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid Token"}, status=status.HTTP_400_BAD_REQUEST)
+
         
  
 class LoginView(APIView):
