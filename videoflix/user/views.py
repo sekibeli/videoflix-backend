@@ -42,10 +42,11 @@ class SignupView(APIView):
         return Response({"user": serializer.data}, status=status.HTTP_201_CREATED)
 
     def send_verification_email(self, user):
+        FRONTEND_URL = 'https://videoflix.alexander-peil.de'
         subject = 'Please confirm your email'
-        print(f'Debug: FRONTEND_URL - {settings.FRONTEND_URL}')  # Debugging
-        verification_url = f'{settings.FRONTEND_URL}/verify/{user.verification_token}'
-        print(f'Debug: Verification URL - {verification_url}')  # Debugging
+        print(f'FRONTEND_URL: {FRONTEND_URL}')  # Debugging
+        verification_url = f'{FRONTEND_URL}/verify/{user.verification_token}'
+        print(f'Verification URL: {verification_url}')  # Debugging
 
         context = {
             'username': user.username,
@@ -64,20 +65,23 @@ class SignupView(APIView):
         email.attach_alternative(html_content, "text/html")
         email.send()
 
+
 class VerifyEmailView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
     def get(self, request, token, format=None):
+        print(f'VerifyEmailView get method called with token: {token}')  # Debugging
         try:
             user = CustomUser.objects.get(verification_token=token)
             user.is_verified = True
             user.save()
+            print("Email successfully verified")  # Debugging
             return Response({"message": "E-Mail successfully verified."}, status=status.HTTP_200_OK)
         except CustomUser.DoesNotExist:
+            print("Invalid token")  # Debugging
             return Response({"error": "Invalid Token"}, status=status.HTTP_400_BAD_REQUEST)
-
-        
+    
  
 class LoginView(APIView):
     permission_classes = []
