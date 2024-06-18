@@ -27,29 +27,31 @@ class SignupView(APIView):
     permission_classes = []
     authentication_classes = []
 
-
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
         if CustomUser.objects.filter(email=request.data["email"]).exists():
-            return Response({"error": "An error occured"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "An error occurred"}, status=status.HTTP_400_BAD_REQUEST)
         
-        serializer.is_valid(raise_exception=True)    
+        serializer.is_valid(raise_exception=True)
         user = CustomUser(**serializer.data)
         password = request.data.get('password')
         user.set_password(password)
         user.save()
-        self.send_verification_email(user) #Try except einbauen?
+        self.send_verification_email(user)
 
         return Response({"user": serializer.data}, status=status.HTTP_201_CREATED)
-    
 
     def send_verification_email(self, user):
         subject = 'Please confirm your email'
+        print(f'Debug: FRONTEND_URL - {settings.FRONTEND_URL}')  # Debugging
+        verification_url = f'{settings.FRONTEND_URL}/verify/{user.verification_token}'
+        print(f'Debug: Verification URL - {verification_url}')  # Debugging
+
         context = {
             'username': user.username,
-            'verification_url': f'{settings.FRONTEND_URL}/verify/{user.verification_token}'
+            'verification_url': verification_url
         }
-        
+
         html_content = render_to_string('email_verification.html', context)
         text_content = render_to_string('email_verification.txt', context)
 
