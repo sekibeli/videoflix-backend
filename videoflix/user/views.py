@@ -44,9 +44,7 @@ class SignupView(APIView):
     def send_verification_email(self, user):
         FRONTEND_URL = 'https://videoflix.alexander-peil.de'
         subject = 'Please confirm your email'
-        print(f'FRONTEND_URL: {FRONTEND_URL}')  # Debugging
-        verification_url = f'{FRONTEND_URL}/verify/{user.verification_token}'
-        print(f'Verification URL: {verification_url}')  # Debugging
+        verification_url = f'https://videoflix.alexander-peil.de/verify/{user.verification_token}'
 
         context = {
             'username': user.username,
