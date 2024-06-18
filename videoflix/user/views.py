@@ -22,6 +22,10 @@ from .serializers import ResetPasswordSerializer
 from django.core.cache import cache
 from random import randint
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class SignupView(APIView):    
     permission_classes = []
@@ -42,10 +46,12 @@ class SignupView(APIView):
         return Response({"user": serializer.data}, status=status.HTTP_201_CREATED)
 
     def send_verification_email(self, user):
-        FRONTEND_URL = 'https://videoflix.alexander-peil.de'
         subject = 'Please confirm your email'
         verification_url = f'https://videoflix.alexander-peil.de/verify/{user.verification_token}'
-
+        
+        # Log the generated URL
+        logger.debug(f'Generated verification URL: {verification_url}')
+        
         context = {
             'username': user.username,
             'verification_url': verification_url
@@ -62,6 +68,9 @@ class SignupView(APIView):
         )
         email.attach_alternative(html_content, "text/html")
         email.send()
+        
+        # Log the email sending
+        logger.debug(f'Email sent to {user.email} with verification URL: {verification_url}')
 
 
 class VerifyEmailView(APIView):
