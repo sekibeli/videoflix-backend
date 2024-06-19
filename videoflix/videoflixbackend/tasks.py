@@ -2,12 +2,7 @@ import subprocess
 import os
 
 from django.conf import settings
-
-from user.models import CustomUser
 from .models import Video, VideoQuality
-
-from django.utils import timezone
-from datetime import timedelta
 
 
 def create_thumbnail(source, output, video_id):

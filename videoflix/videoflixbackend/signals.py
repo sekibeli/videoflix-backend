@@ -2,7 +2,7 @@ from django.conf import settings
 import os
 from dotenv import load_dotenv
 load_dotenv()
-
+from rq import Retry
 from django.dispatch import receiver
 
 from videoflixbackend.tasks import  convert_and_save_quality, create_thumbnail
@@ -11,7 +11,6 @@ from django.db.models.signals import post_save, post_delete, pre_save
 import django_rq
 from django.core.cache import cache
 from django.core.mail import send_mail
-# from django.contrib.auth.models import User
 from user.models import CustomUser
 
 
@@ -20,7 +19,6 @@ from user.models import CustomUser
 from django.core.mail import EmailMultiAlternatives
 from django.dispatch import receiver
 from django.template.loader import render_to_string
-from django.urls import reverse
 from django_rest_passwordreset.signals import reset_password_token_created
 
 
@@ -39,9 +37,9 @@ def video_post_save(sender, instance, created, **kwargs):
         thumbnail_output = f'thumbnails/{instance.id}-thumbnail.jpg'
         queue.enqueue(create_thumbnail, instance.video_file.path, thumbnail_output, instance.id)
               
-        queue.enqueue(convert_and_save_quality, instance, '360px', '480x360')
-        queue.enqueue(convert_and_save_quality, instance,  '720p', '1280x720')
-        queue.enqueue(convert_and_save_quality, instance,'1080p', '1920x1080')
+        queue.enqueue(convert_and_save_quality, instance, '360px', '480x360', retry=Retry(max=5, interval=[10, 30, 60, 120, 300]))
+        queue.enqueue(convert_and_save_quality, instance,  '720p', '1280x720', retry=Retry(max=5, interval=[10, 30, 60, 120, 300]))
+        queue.enqueue(convert_and_save_quality, instance,'1080p', '1920x1080', retry=Retry(max=5, interval=[10, 30, 60, 120, 300]))
 
          # E-Mail an (alle) Superuser senden
         subject = 'Neues Video hochgeladen'

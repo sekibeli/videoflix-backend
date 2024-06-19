@@ -110,7 +110,7 @@ RQ_QUEUES = {
         'PASSWORD': os.environ.get('redisPassword'),
         'PORT': 6379,
         'DB': 0,
-        'DEFAULT_TIMEOUT': 360,
+        'DEFAULT_TIMEOUT': 1800,
     },
 }
 
