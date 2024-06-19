@@ -6,7 +6,7 @@ from rq import Retry
 from django.dispatch import receiver
 
 from videoflixbackend.tasks import  convert_and_save_quality, create_thumbnail
-from .models import Video
+from .models import Video, VideoQuality
 from django.db.models.signals import post_save, post_delete, pre_save
 import django_rq
 from django.core.cache import cache
@@ -60,16 +60,26 @@ def video_post_delete(sender, instance, **kwargs):
     cache.delete('recent_videos_cache_key')
     cache.delete('popular_videos_cache_key')
     cache.delete('most_seen_videos_cache_key')
+
     if instance.video_file:
-        if os.path.isfile(instance.video_file.path):
-            base, _ = os.path.splitext(instance.video_file.path)
-            os.remove(instance.video_file.path)
-            os.remove( base + '-720p.mp4')
-            os.remove( base + '-480p.mp4')
-            os.remove( base + '-1080p.mp4')
-            print ('Video wurde gelöscht')   
-             #Löschen des Cache
-        cache.delete('video_list_cache_key')
+        base, ext = os.path.splitext(instance.video_file.path)
+        
+        files_to_delete = [
+            instance.video_file.path,
+            f'{base}-360px{ext}',
+            f'{base}-480p{ext}',
+            f'{base}-720p{ext}',
+            f'{base}-1080p{ext}'
+        ]
+
+        for file_path in files_to_delete:
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        
+        # Löschen der zugehörigen Einträge in der VideoQuality-Tabelle
+        VideoQuality.objects.filter(video=instance).delete()
+        print('Video und Qualitätsvideos wurden gelöscht')
+
 
 
 @receiver(pre_save, sender = Video)
