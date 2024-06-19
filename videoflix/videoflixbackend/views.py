@@ -67,7 +67,24 @@ class VideoViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(created_from=self.request.user)
         cache.delete('video_list_cache_key')
-
+        
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def toggle_like(self, request, pk=None):
+        video = get_object_or_404(Video, pk=pk)
+        user = request.user
+        if user in video.likes.all():
+            video.likes.remove(user)
+            liked = False
+        else:
+            video.likes.add(user)
+            liked = True
+        video.save()
+        cache.delete('video_list_cache_key')
+        return Response({
+            'liked': liked,
+            'likes': list(video.likes.values_list('id', flat=True))
+    }, status=status.HTTP_200_OK)
+ 
     def retrieve(self, request, *args, **kwargs):
         video = get_object_or_404(Video, pk=kwargs['pk'])
         qualities = VideoQuality.objects.filter(video=video)

@@ -13,7 +13,6 @@ from user.views import (
     LogoutView,
     LoggeduserView,
     DeleteUserView,
-    ToggleLike,
     GuestLoginView
 )
 
@@ -39,7 +38,6 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('edit-user/', LoggeduserView.as_view(), name='edit-user'),
     path('delete-user/', DeleteUserView.as_view(), name='delete-user'),
-    path('toggle_like/<int:videoId>', ToggleLike.as_view(), name='toggle-like'),
     path('popular-videos/', VideoViewSet.as_view({'get': 'popular_videos'}), name='popular_videos'),
     path('mostSeen-videos/', VideoViewSet.as_view({'get': 'mostSeen_videos'}), name='mostSeen_videos'),
     path('recentVideos/', VideoViewSet.as_view({'get': 'recentVideos'}), name='recentVideos'),

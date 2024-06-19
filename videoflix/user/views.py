@@ -4,7 +4,6 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
-from django.shortcuts import get_object_or_404
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -19,7 +18,6 @@ from videoflixbackend.serializers import CustomUserSerializer
 from videoflixbackend.models import Video
 from .serializers import ResetPasswordSerializer
 
-from django.core.cache import cache
 from random import randint
 
 
@@ -166,25 +164,6 @@ class UserViewSet(viewsets.ModelViewSet):
             return CustomUser.objects.all()  
         return CustomUser.objects.none() 
 
-
-class ToggleLike(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, videoId):
-        user = request.user
-        video = get_object_or_404(Video, pk=videoId)
-
-        if user in video.likes.all():
-            video.likes.remove(user)
-            liked = False
-        else:
-            video.likes.add(user)
-            liked = True
-
-        cache.delete('video_list_cache_key')
-
-        return Response({'liked': liked}, status=status.HTTP_200_OK)
 
 class ResetPasswordView(APIView):
     def post(self, request, *args, **kwargs):
